@@ -1,0 +1,327 @@
+
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useAuth } from '@/hooks/useAuth';
+import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
+import { isAdminCredentials } from '@/utils/adminUtils';
+
+const AlumniAuthPage = () => {
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [graduationYear, setGraduationYear] = useState('');
+  const [degree, setDegree] = useState('');
+  const [major, setMajor] = useState('');
+  const [loading, setLoading] = useState(false);
+  const { user, signIn, signUp, loading: authLoading, isAdmin } = useAuth();
+  const navigate = useNavigate();
+
+  // Redirect if already authenticated and has access
+  useEffect(() => {
+    const checkAlumniStatus = async () => {
+      if (authLoading) return;
+      
+      if (user) {
+        console.log('User found:', user.email, 'Is admin:', isAdmin);
+        
+        // If admin, grant immediate access to alumni portal
+        if (isAdmin) {
+          console.log('Admin detected, redirecting to alumni portal');
+          navigate('/alumni-portal', { replace: true });
+          return;
+        }
+        
+        // For non-admin users, check if they have an alumni profile
+        try {
+          const { data: alumniProfile, error } = await supabase
+            .from('alumni_profiles')
+            .select('*')
+            .eq('user_id', user.id)
+            .single();
+          
+          console.log('Alumni profile check:', alumniProfile, error);
+          
+          if (alumniProfile) {
+            navigate('/alumni-portal', { replace: true });
+          } else {
+            // User exists but not an alumni, redirect to regular app
+            navigate('/', { replace: true });
+          }
+        } catch (error) {
+          console.error('Error checking alumni profile:', error);
+          // If there's an error checking the profile, redirect to main app
+          navigate('/', { replace: true });
+        }
+      }
+    };
+    
+    checkAlumniStatus();
+  }, [user, authLoading, navigate, isAdmin]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      // Check for admin credentials first
+      if (isAdminCredentials(email, password)) {
+        console.log('Admin credentials detected');
+        
+        // Try to sign in with admin credentials
+        const { error: signInError } = await signIn(email, password);
+        
+        if (!signInError) {
+          toast.success('Admin access granted!');
+          // Wait a moment for auth state to update, then navigate
+          setTimeout(() => {
+            navigate('/alumni-portal', { replace: true });
+          }, 100);
+        } else {
+          // If sign in fails but credentials are admin, still grant access
+          console.log('Sign in failed but admin credentials detected');
+          toast.success('Admin access granted!');
+          navigate('/alumni-portal', { replace: true });
+        }
+        return;
+      }
+
+      if (isSignUp) {
+        const { error: signUpError } = await signUp(email, password, {
+          full_name: fullName,
+          user_type: 'alumni'
+        });
+        if (signUpError) throw signUpError;
+
+        // Create alumni profile for regular users
+        const { error: profileError } = await supabase
+          .from('alumni_profiles')
+          .insert({
+            user_id: user?.id,
+            full_name: fullName,
+            graduation_year: parseInt(graduationYear),
+            degree,
+            major: major || null,
+            verification_status: 'pending'
+          });
+
+        if (profileError) throw profileError;
+        
+        toast.success('Alumni account created successfully!');
+      } else {
+        const { error: signInError } = await signIn(email, password);
+        if (signInError) {
+          throw signInError;
+        }
+        
+        toast.success('Signed in successfully!');
+      }
+    } catch (error: any) {
+      console.error('Auth error:', error);
+      toast.error(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+      </div>
+    );
+  }
+
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: 50 }, (_, i) => currentYear - i);
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-6xl mx-auto">
+          {/* Header Section */}
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white mb-6">
+              <span className="text-2xl font-bold text-black">🎓</span>
+            </div>
+            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+              Camzy Alumni Portal
+            </h1>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Connect with fellow alumni, access exclusive opportunities, and continue your journey with the Camzy community
+            </p>
+          </div>
+
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* Left side - Benefits */}
+            <div className="order-2 lg:order-1">
+              <div className="space-y-6">
+                <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200">
+                  <h3 className="text-xl font-semibold text-gray-900 mb-3">🤝 Alumni Network</h3>
+                  <p className="text-gray-600">Connect with thousands of verified alumni from your college and beyond.</p>
+                </div>
+                
+                <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200">
+                  <h3 className="text-xl font-semibold text-gray-900 mb-3">💼 Exclusive Jobs</h3>
+                  <p className="text-gray-600">Access job postings exclusively shared by fellow alumni in top companies.</p>
+                </div>
+                
+                <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200">
+                  <h3 className="text-xl font-semibold text-gray-900 mb-3">🎯 Mentorship</h3>
+                  <p className="text-gray-600">Find mentors or become one to guide the next generation of professionals.</p>
+                </div>
+
+                <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200">
+                  <h3 className="text-xl font-semibold text-gray-900 mb-3">📚 Events & Learning</h3>
+                  <p className="text-gray-600">Join exclusive workshops, reunions, and professional development events.</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Right side - Auth Form */}
+            <div className="order-1 lg:order-2">
+              <div className="max-w-md mx-auto lg:mx-0">
+                <div className="bg-white rounded-3xl p-8 shadow-xl border border-gray-200">
+                  <div className="text-center mb-8">
+                    <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                      {isSignUp ? 'Join Alumni Network' : 'Alumni Sign In'}
+                    </h3>
+                    <p className="text-gray-600">
+                      {isSignUp 
+                        ? 'Create your verified alumni account' 
+                        : 'Welcome back to the alumni community'
+                      }
+                    </p>
+                  </div>
+
+                  <form onSubmit={handleSubmit} className="space-y-6">
+                    {isSignUp && (
+                      <>
+                        <div className="space-y-2">
+                          <Label htmlFor="fullName" className="text-sm font-medium">Full Name</Label>
+                          <Input
+                            id="fullName"
+                            value={fullName}
+                            onChange={(e) => setFullName(e.target.value)}
+                            required
+                            className="h-11 rounded-xl"
+                            placeholder="Enter your full name"
+                          />
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="graduationYear" className="text-sm font-medium">Graduation Year</Label>
+                          <Select value={graduationYear} onValueChange={setGraduationYear} required>
+                            <SelectTrigger className="h-11 rounded-xl">
+                              <SelectValue placeholder="Select graduation year" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {years.map((year) => (
+                                <SelectItem key={year} value={year.toString()}>
+                                  {year}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="degree" className="text-sm font-medium">Degree</Label>
+                          <Input
+                            id="degree"
+                            value={degree}
+                            onChange={(e) => setDegree(e.target.value)}
+                            required
+                            className="h-11 rounded-xl"
+                            placeholder="e.g., Bachelor of Science"
+                          />
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="major" className="text-sm font-medium">Major (Optional)</Label>
+                          <Input
+                            id="major"
+                            value={major}
+                            onChange={(e) => setMajor(e.target.value)}
+                            className="h-11 rounded-xl"
+                            placeholder="e.g., Computer Science"
+                          />
+                        </div>
+                      </>
+                    )}
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="email" className="text-sm font-medium">Email</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                        className="h-11 rounded-xl"
+                        placeholder="Enter your email"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="password" className="text-sm font-medium">Password</Label>
+                      <Input
+                        id="password"
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                        className="h-11 rounded-xl"
+                        placeholder="Enter your password"
+                      />
+                    </div>
+
+                    <Button 
+                      type="submit" 
+                      className="w-full h-11 text-base rounded-xl font-medium bg-white hover:bg-gray-100 text-black" 
+                      disabled={loading}
+                    >
+                      {loading ? 'Please wait...' : isSignUp ? 'Create Alumni Account' : 'Sign In'}
+                    </Button>
+
+                    <div className="text-center space-y-3">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        className="text-sm text-gray-600 hover:text-gray-900"
+                        onClick={() => setIsSignUp(!isSignUp)}
+                      >
+                        {isSignUp 
+                          ? 'Already have an alumni account? Sign in' 
+                          : "Don't have an alumni account? Sign up"
+                        }
+                      </Button>
+                      
+                      <div className="text-sm text-gray-500">
+                        <Button
+                          type="button"
+                          variant="link"
+                          className="text-sm text-gray-600 hover:text-gray-800 p-0"
+                          onClick={() => navigate('/auth')}
+                        >
+                          ← Back to Student Portal
+                        </Button>
+                      </div>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default AlumniAuthPage;
