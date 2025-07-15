@@ -131,8 +131,9 @@ const AlumniAuthPage = () => {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-black">
+        <img src="/logo.webp" alt="Loading..." className="w-48 h-48 object-contain animate-pulse mb-6" style={{ maxWidth: '80vw', maxHeight: '40vh' }} />
+        <span className="text-white text-lg mt-2">Checking authentication status...</span>
       </div>
     );
   }
@@ -150,10 +151,10 @@ const AlumniAuthPage = () => {
               <span className="text-2xl font-bold text-black">🎓</span>
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-              Camzy Alumni Portal
+              Everwo Alumni Portal
             </h1>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Connect with fellow alumni, access exclusive opportunities, and continue your journey with the Camzy community
+              Connect with fellow alumni, access exclusive opportunities, and continue your journey with the Everwo community
             </p>
           </div>
 

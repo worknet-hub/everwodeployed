@@ -14,7 +14,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 import { ProfileHeader } from './ProfileHeader';
 import { ProfileOverviewTab } from './ProfileOverviewTab';
-import { useRealtime } from '@/hooks/useRealtime';
+import { useRealtimeProfile } from "@/contexts/RealtimeProfileContext";
 import SavedThoughtsList from './SavedThoughtsList';
 import UserThoughtsList from './UserThoughtsList';
 
@@ -44,71 +44,28 @@ interface ProfilePageProps {
 
 export const ProfilePage = ({ userId }: ProfilePageProps) => {
   const { user } = useAuth();
+  const { profiles, connections } = useRealtimeProfile();
   const navigate = useNavigate();
-  const [profile, setProfile] = useState<Profile | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
 
   const isOwnProfile = !userId || userId === user?.id;
   const profileId = userId || user?.id;
 
-  const fetchProfile = async () => {
-    if (!profileId) return;
-
-    const { data: profileData } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', profileId)
-      .single();
-
-    if (profileData) {
-      const formattedProfile: Profile = {
-        id: profileData.id,
-        full_name: profileData.full_name || '',
-        username: profileData.username || '',
-        avatar_url: profileData.avatar_url || '',
-        bio: profileData.bio || '',
-        college_name: profileData.college_name || '',
-        college_verified: profileData.college_verified || false,
-        skills: profileData.skills || [],
-        portfolio: profileData.portfolio || [],
-        rating: profileData.rating || 0,
-        location: profileData.location || '',
-        availability_status: profileData.availability_status || 'available',
-        badges: profileData.badges || [],
-        created_at: profileData.created_at || '',
-        available: profileData.availability_status === 'available',
-        college: profileData.college_name || '',
-        interests: profileData.interests || [],
-      };
-      setProfile(formattedProfile);
-    }
-  };
+  // Find the profile from context
+  const profile = profiles?.find((p: any) => p.id === profileId) || null;
 
   const handleAvatarChange = (newAvatarUrl: string) => {
-    if (profile) {
-      setProfile({
-        ...profile,
-        avatar_url: newAvatarUrl
-      });
-    }
+    // Optionally update avatar locally for instant UI feedback
+    // Real-time update will come from context
   };
 
-  // Use real-time updates for profile data
-  useRealtime({
-    table: 'profiles',
-    filter: profileId ? `id=eq.${profileId}` : undefined,
-    onUpdate: fetchProfile
-  });
-
-  useEffect(() => {
-    if (profileId) {
-      fetchProfile();
-    }
-  }, [profileId]);
-
   if (!profile) {
-    return <div className="p-6">Loading profile...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-black">
+        <img src="/logo.png" alt="Loading..." className="w-48 h-48 object-contain animate-pulse" style={{ maxWidth: '80vw', maxHeight: '80vh' }} />
+      </div>
+    );
   }
 
   const tabs = ['overview', 'thoughts'];
@@ -138,7 +95,7 @@ export const ProfilePage = ({ userId }: ProfilePageProps) => {
         </div>
       </header>
 
-      <div className="max-w-6xl mx-auto p-6 space-y-6">
+      <div className="max-w-6xl mx-auto p-6 space-y-6 pb-24">
         {/* Header */}
         <Card className="shadow-none border-0">
           <CardContent className="p-8">
@@ -147,6 +104,7 @@ export const ProfilePage = ({ userId }: ProfilePageProps) => {
               isOwnProfile={isOwnProfile} 
               onEditClick={() => setShowEditModal(true)}
               onAvatarChange={isOwnProfile ? handleAvatarChange : undefined}
+              connections={connections}
             />
           </CardContent>
         </Card>
@@ -178,7 +136,7 @@ export const ProfilePage = ({ userId }: ProfilePageProps) => {
           isOpen={showEditModal}
           onClose={() => setShowEditModal(false)}
           profile={profile}
-          onProfileUpdated={fetchProfile}
+          onProfileUpdated={() => {}}
         />
       </div>
     </div>

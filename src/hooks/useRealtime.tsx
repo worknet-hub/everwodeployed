@@ -20,16 +20,14 @@ export const useRealtime = ({ table, event = '*', filter, onUpdate }: UseRealtim
 
   useEffect(() => {
     // Clean up any existing channel first
-    if (channelRef.current && isSubscribedRef.current) {
-      console.log('Cleaning up existing realtime channel');
+    if (channelRef.current) {
       supabase.removeChannel(channelRef.current);
       channelRef.current = null;
       isSubscribedRef.current = false;
     }
 
-    // Create a unique channel name to avoid conflicts
-    const timestamp = Date.now();
-    const channelName = filter ? `${table}-${filter}-${timestamp}` : `${table}-${timestamp}`;
+    // Use a stable channel name based on table, event, and filter
+    const channelName = filter ? `${table}-${event}-${filter}` : `${table}-${event}`;
 
     const changesFilter: RealtimePostgresChangesFilter<`${REALTIME_POSTGRES_CHANGES_LISTEN_EVENT}`> = {
       event,
@@ -40,6 +38,12 @@ export const useRealtime = ({ table, event = '*', filter, onUpdate }: UseRealtim
       changesFilter.filter = filter;
     }
 
+    // Prevent multiple subscriptions to the same channel instance
+    if (channelRef.current && isSubscribedRef.current) {
+      console.warn('Tried to subscribe multiple times to the same channel instance. Skipping.');
+      return;
+    }
+
     try {
       const channel = supabase
         .channel(channelName)
@@ -47,12 +51,10 @@ export const useRealtime = ({ table, event = '*', filter, onUpdate }: UseRealtim
           'postgres_changes',
           changesFilter as RealtimePostgresChangesFilter<'*'>,
           (payload: RealtimePostgresChangesPayload<{ [key: string]: any }>) => {
-            console.log(`${table} ${payload.eventType}:`, payload);
             onUpdate();
           }
         )
         .subscribe((status) => {
-          console.log(`Realtime subscription status for ${table}:`, status);
           if (status === 'SUBSCRIBED') {
             isSubscribedRef.current = true;
           }
@@ -65,7 +67,6 @@ export const useRealtime = ({ table, event = '*', filter, onUpdate }: UseRealtim
 
     return () => {
       if (channelRef.current && isSubscribedRef.current) {
-        console.log('Cleaning up realtime subscription');
         supabase.removeChannel(channelRef.current);
         channelRef.current = null;
         isSubscribedRef.current = false;

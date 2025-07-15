@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -38,10 +38,14 @@ export const CreateProjectModal = ({ isOpen, onClose, onProjectCreated }: Create
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md" aria-describedby="create-project-modal-description">
+        <DialogTitle className="sr-only">Create Project</DialogTitle>
         <DialogHeader>
-          <DialogTitle>Create New Project</DialogTitle>
+          <DialogTitle>Create Project</DialogTitle>
         </DialogHeader>
+        <DialogDescription id="create-project-modal-description">
+          Fill in the details to create a new project.
+        </DialogDescription>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <Label htmlFor="title">Project Title</Label>

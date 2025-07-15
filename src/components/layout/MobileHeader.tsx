@@ -44,22 +44,14 @@ const MobileHeader = () => {
   return (
     <div className="md:hidden sticky top-0 z-50 header-dark mobile-header bg-[#000000]">
       <div className="flex items-center justify-between">
-        {/* Logo - Removed */}
+        {/* Logo */}
         <Link to="/" className="flex items-center">
-          <Home className="w-3 h-3 text-black" />
+          {/* <img src="/logo.webp" alt="Logo" className="h-12 w-24 object-contain" style={{ maxHeight: '48px', marginLeft: '-8px' }} loading="lazy" /> */}
+          <span className="font-bold text-2xl text-white tracking-widest">EVERWO</span>
         </Link>
 
         <div className="flex items-center space-x-2">
           {/* Notifications */}
-          <Button 
-            variant="ghost" 
-            size="icon"
-            className="h-10 w-10 text-gray-400 hover:text-white hover:bg-[#2a2f3e] relative"
-            onClick={() => navigate('/notifications')}
-          >
-            <Bell className="w-6 h-6" />
-            <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></div>
-          </Button>
 
           {/* Mobile Menu */}
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
@@ -101,8 +93,6 @@ const MobileHeader = () => {
                     </Link>
                   ))}
 
-                  <Separator className="my-6 bg-[#2a2f3e]" />
-
                   {userMenu.map((item) => (
                     <Link
                       key={item.name}
@@ -114,6 +104,30 @@ const MobileHeader = () => {
                       <span>{item.name}</span>
                     </Link>
                   ))}
+
+                  {/* Add Privacy Policy, About, Help */}
+                  <Separator className="my-6 bg-[#2a2f3e]" />
+                  <Link
+                    to="/privacy-policy"
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-300 hover:text-white hover:bg-[#2a2f3e] transition-colors"
+                  >
+                    <span>Privacy Policy</span>
+                  </Link>
+                  <Link
+                    to="/about"
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-300 hover:text-white hover:bg-[#2a2f3e] transition-colors"
+                  >
+                    <span>About</span>
+                  </Link>
+                  <Link
+                    to="/help"
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-300 hover:text-white hover:bg-[#2a2f3e] transition-colors"
+                  >
+                    <span>Help</span>
+                  </Link>
                 </div>
 
                 {/* Sign Out */}

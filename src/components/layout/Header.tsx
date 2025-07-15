@@ -77,7 +77,11 @@ const Header = () => {
     <div className="sticky top-0 z-50">
       <header className={`bg-[#000000] animate-slide-up transition-colors duration-300 min-h-[80px] py-4`}>
         <div className="container mx-auto h-18 flex items-center justify-between">
-          {/* Left: Logo - Removed */}
+          {/* Left: Logo */}
+          <Link to="/" className="flex items-center mr-6">
+            {/* <img src="/logo.webp" alt="Logo" className="h-10 w-20 object-contain" loading="lazy" /> */}
+            <span className="font-bold text-2xl text-white tracking-widest">EVERWO</span>
+          </Link>
           {/* Center: Navigation */}
           <nav className="flex-1 flex justify-center">
             <div className="flex space-x-2">
@@ -158,7 +162,7 @@ const Header = () => {
                     <DropdownMenuItem asChild>
                       <Link to="/profile" className="flex items-center text-white hover:text-white transition-colors">
                         <User className="w-4 h-4 mr-2" />
-                        Profile
+                        View Profile
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator className="bg-white/10" />

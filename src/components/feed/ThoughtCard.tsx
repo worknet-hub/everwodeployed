@@ -3,6 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   Heart,
   MessageCircle,
@@ -14,6 +15,8 @@ import {
   User
 } from 'lucide-react';
 import { useSavedThoughts } from '@/hooks/useSavedThoughts';
+import { useRealtime } from '@/hooks/useRealtime';
+import dayjs from 'dayjs';
 
 interface ThoughtCardProps {
   id: string;
@@ -48,18 +51,27 @@ const ThoughtCard = ({
   // Bookmark logic
   const { isThoughtSaved, saveThought, unsaveThought } = useSavedThoughts();
   const [saved, setSaved] = useState(false);
+  const [pendingUnsave, setPendingUnsave] = useState(false);
 
+  // Real-time sync for saved state
   useEffect(() => {
-    isThoughtSaved(id).then(setSaved);
+    let mounted = true;
+    isThoughtSaved(id).then((val) => { if (mounted) setSaved(val); });
+    return () => { mounted = false; };
   }, [id]);
+  // Removed useRealtime subscription for saved_thoughts
 
   const handleToggleSave = async () => {
     if (saved) {
-      await unsaveThought(id);
-      setSaved(false);
+      setSaved(false); // Optimistic UI
+      setPendingUnsave(true);
+      setTimeout(async () => {
+        await unsaveThought(id);
+        setPendingUnsave(false);
+      }, 300); // Slight latency for removal
     } else {
+      setSaved(true); // Optimistic UI
       await saveThought(id);
-      setSaved(true);
     }
   };
 
@@ -68,52 +80,78 @@ const ThoughtCard = ({
     setLikeCount(prev => isLiked ? prev - 1 : prev + 1);
   };
 
+  const navigate = useNavigate();
+
+  // Defensive fallback for author
+  const safeAuthor = author || { name: 'Anonymous', avatar: '', college: '', verified: false, username: '' };
+
   return (
-    <Card className="w-full glass-card hover:glass-bright transition-all duration-500 group animate-fade-in card-hover">
+    <Card className="w-full glass-card hover:glass-bright transition-all duration-500 group animate-fade-in card-hover relative">
+      {/* Bookmark icon top right */}
+      <button
+        className="absolute top-3 right-3 z-10 p-1 rounded-full bg-black/60 hover:bg-black/80 transition-colors"
+        onClick={handleToggleSave}
+        aria-label={saved ? 'Unsave thought' : 'Save thought'}
+      >
+        {saved ? (
+          <Bookmark className="w-6 h-6 text-white fill-current" />
+        ) : (
+          <Bookmark className="w-6 h-6 text-white" />
+        )}
+      </button>
       <CardContent className="p-3 md:p-6 space-y-3 md:space-y-4">
         {/* Header */}
         <div className="flex items-start justify-between">
           <div className="flex items-center space-x-2 md:space-x-4">
-            <Avatar className="w-9 h-9 md:w-12 md:h-12 ring-2 ring-white/20 ring-offset-2 ring-offset-transparent transition-all duration-300 group-hover:ring-gray-400/50">
-              <AvatarImage src={author.avatar} />
-              <AvatarFallback className="bg-gradient-to-br from-gray-700 to-gray-900 text-white font-semibold">
-                <User className="w-6 h-6 text-gray-300" />
-              </AvatarFallback>
-            </Avatar>
-            <div className="space-y-0.5 md:space-y-1">
-              <div className="flex items-center space-x-1 md:space-x-2">
-                <h3 className="font-semibold text-white group-hover:text-gray-200 transition-colors duration-300 text-sm md:text-lg truncate md:whitespace-normal max-w-[80px] md:max-w-none">{author.username && author.username.trim() !== '' ? author.username : 'Anonymous'}</h3>
-                <span className="hidden md:inline">
-                  {author.verified && (
-                    <Verified className="w-4 h-4 text-white fill-current animate-pulse-glow" />
-                  )}
-                </span>
+            {safeAuthor?.username && safeAuthor.username.trim() !== '' ? (
+              <div className="flex items-center space-x-2 md:space-x-4 focus:outline-none">
+                <div className="cursor-pointer" onClick={() => navigate(`/profile/${safeAuthor.id}`)}>
+                  <Avatar className="w-9 h-9 md:w-12 md:h-12 ring-2 ring-white/20 ring-offset-2 ring-offset-transparent transition-all duration-300 group-hover:ring-gray-400/50">
+                    <AvatarImage src={safeAuthor.avatar} />
+                    <AvatarFallback className="bg-gradient-to-br from-gray-700 to-gray-900 text-white font-semibold">
+                      <User className="w-6 h-6 text-gray-300" />
+                    </AvatarFallback>
+                  </Avatar>
+                </div>
+                <span className="font-semibold text-foreground text-sm md:text-base cursor-pointer" onClick={() => navigate(`/profile/${safeAuthor.id}`)}>{safeAuthor.username}</span>
+                <span className="text-[10px] md:text-xs text-gray-400 group-hover:text-gray-300 transition-colors">{dayjs(timestamp).format('MMM DD, YYYY, hh:mm A')}</span>
               </div>
-              <p className="hidden md:block text-xs text-gray-300 group-hover:text-gray-200 transition-colors">{author.college}</p>
-              <p className="text-[10px] md:text-xs text-gray-400 group-hover:text-gray-300 transition-colors truncate md:whitespace-normal max-w-[80px] md:max-w-none">{timestamp}</p>
-            </div>
+            ) : (
+              <>
+                <Avatar className="w-9 h-9 md:w-12 md:h-12 ring-2 ring-white/20 ring-offset-2 ring-offset-transparent transition-all duration-300 group-hover:ring-gray-400/50">
+                  <AvatarImage src={safeAuthor?.avatar} />
+                  <AvatarFallback className="bg-gradient-to-br from-gray-700 to-gray-900 text-white font-semibold">
+                    <User className="w-6 h-6 text-gray-300" />
+                  </AvatarFallback>
+                </Avatar>
+                <div className="space-y-0.5 md:space-y-1">
+                  <div className="flex items-center space-x-1 md:space-x-2">
+                    <span className="font-semibold text-white group-hover:text-gray-200 transition-colors duration-300 text-sm md:text-lg">Anonymous</span>
+                    <span className="hidden md:inline">
+                      {safeAuthor?.verified && (
+                        <Verified className="w-4 h-4 text-white fill-current animate-pulse-glow" />
+                      )}
+                    </span>
+                  </div>
+                  <p className="hidden md:block text-xs text-gray-300 group-hover:text-gray-200 transition-colors">{safeAuthor?.college}</p>
+                  <p className="text-[10px] md:text-xs text-gray-400 group-hover:text-gray-300 transition-colors">{dayjs(timestamp).format('MMM DD, YYYY, hh:mm A')}</p>
+                </div>
+              </>
+            )}
           </div>
-          <div className="hidden md:flex items-center space-x-2">
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={handleToggleSave}
-              className={`w-8 h-8 glass hover:glass-bright transition-all duration-300 hover:scale-110 ${
-                saved ? 'text-white' : 'text-gray-300 hover:text-white'
-              }`}
-              aria-label={saved ? "Unsave Thought" : "Save Thought"}
-            >
-              {saved ? <BookmarkCheck className="w-4 h-4" /> : <Bookmark className="w-4 h-4" />}
-            </Button>
-            <Button variant="ghost" size="icon" className="w-8 h-8 glass hover:glass-bright text-gray-300 hover:text-white transition-all duration-300 hover:scale-110">
-              <MoreHorizontal className="w-4 h-4" />
-            </Button>
-          </div>
+          {/* Three dots button vertically aligned with avatar, right side */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="w-8 h-8 glass hover:glass-bright text-gray-300 hover:text-white transition-all duration-300 hover:scale-110"
+          >
+            <MoreHorizontal className="w-4 h-4" />
+          </Button>
         </div>
 
         {/* Content */}
         <div className="space-y-2 md:space-y-4">
-          <p className="text-white leading-relaxed group-hover:text-gray-100 transition-colors text-sm md:text-lg break-words line-clamp-3 md:line-clamp-none">{content}</p>
+          <div className="text-white leading-relaxed group-hover:text-gray-100 transition-colors text-sm md:text-lg break-words line-clamp-3 md:line-clamp-none">{content}</div>
           {tags.length > 0 && (
             <div className="flex flex-wrap gap-1 md:gap-2 mt-1 md:mt-0">
               {tags.map((tag, index) => (
@@ -133,6 +171,7 @@ const ThoughtCard = ({
                 src={image} 
                 alt="Thought attachment" 
                 className="w-full h-40 md:h-64 object-cover transition-transform duration-500 group-hover:scale-105"
+                loading="lazy"
               />
             </div>
           )}

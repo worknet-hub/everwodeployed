@@ -4,6 +4,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from '@/components/ui/dialog';
 
 interface EmojiPickerProps {
@@ -17,10 +18,11 @@ const commonEmojis = ['👍', '❤️', '😂', '😮', '😢', '😡', '👎', 
 export const EmojiPicker = ({ isOpen, onClose, onEmojiSelect }: EmojiPickerProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>React with emoji</DialogTitle>
-        </DialogHeader>
+      <DialogContent className="sm:max-w-md" aria-describedby="emoji-picker-description">
+        <DialogTitle className="sr-only">Emoji Picker</DialogTitle>
+        <DialogDescription id="emoji-picker-description">
+          Select an emoji to insert into your message.
+        </DialogDescription>
         <div className="grid grid-cols-5 gap-2 p-4">
           {commonEmojis.map((emoji) => (
             <button

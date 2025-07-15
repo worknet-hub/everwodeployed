@@ -131,7 +131,7 @@ export const useMessageRealtime = ({
           schema: 'public',
           table: 'messages'
         },
-        (payload) => {
+        async (payload) => {
           console.log('Message updated via realtime:', payload);
           const updatedMessage = payload.new as Message;
 
@@ -142,12 +142,43 @@ export const useMessageRealtime = ({
 
           if (!isRelevantToCurrentConversation) return;
 
-          // Update message read status in current conversation
-          setMessages(prev => prev.map(msg => 
-            msg.id === updatedMessage.id 
-              ? { ...msg, is_read: updatedMessage.is_read }
-              : msg
-          ));
+          // Fetch the complete updated message with sender info
+          try {
+            const { data: completeMessage } = await supabase
+              .from('messages')
+              .select(`*, sender:profiles!messages_sender_id_fkey(full_name, avatar_url)`)
+              .eq('id', updatedMessage.id)
+              .single();
+
+            if (completeMessage) {
+              let transformedMessage: Message = {
+                ...completeMessage,
+                reactions: []
+              };
+
+              // If this message is a reply, fetch the reply data
+              if (completeMessage.reply_to_id) {
+                const { data: replyData } = await supabase
+                  .from('messages')
+                  .select(`*, sender:profiles!messages_sender_id_fkey(full_name, avatar_url)`)
+                  .eq('id', completeMessage.reply_to_id)
+                  .single();
+                if (replyData) {
+                  transformedMessage.reply_to_message = {
+                    ...replyData,
+                    reactions: []
+                  } as Message;
+                }
+              }
+
+              setMessages(prev => prev.map(msg =>
+                msg.id === transformedMessage.id ? transformedMessage : msg
+              ));
+            }
+          } catch (error) {
+            console.error('Error fetching updated message:', error);
+          }
+
           // Also refresh conversations when message read status changes
           fetchConversations();
         }

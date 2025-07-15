@@ -17,6 +17,7 @@ interface ProfileOverviewTabProps {
 }
 
 export const ProfileOverviewTab = ({ profile, isOwnProfile }: ProfileOverviewTabProps) => {
+  if (!profile) return null;
   const { user } = useAuth();
   const { updateProfile, saveImmediately } = useProfileUpdater();
   const [userInterests, setUserInterests] = useState<string[]>(profile?.interests || []);

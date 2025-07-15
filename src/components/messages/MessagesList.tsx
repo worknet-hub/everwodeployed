@@ -12,9 +12,24 @@ interface MessagesListProps {
   partnerId?: string;
   onReply: (message: Message) => void;
   onReact: (messageId: string, emoji: string) => void;
+  onLoadOlderMessages?: () => void;
+  hasMoreMessages?: boolean;
+  isLoadingOlder?: boolean;
 }
 
-export const MessagesList = ({ messages, currentUserId, partnerId, onReply, onReact }: MessagesListProps) => {
+export const MessagesList = ({ 
+  messages, 
+  currentUserId, 
+  partnerId, 
+  onReply, 
+  onReact,
+  onLoadOlderMessages,
+  hasMoreMessages = false,
+  isLoadingOlder = false
+}: MessagesListProps) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [isNearTop, setIsNearTop] = useState(false);
+
   // Mark messages as read when they come into view
   useEffect(() => {
     if (!currentUserId || !partnerId) return;
@@ -41,35 +56,36 @@ export const MessagesList = ({ messages, currentUserId, partnerId, onReply, onRe
     markMessagesAsRead();
   }, [messages, currentUserId, partnerId]);
 
-  // Dynamically show only the most recent 5-8 messages based on their height
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [visibleCount, setVisibleCount] = useState(8);
+  // Handle scroll to detect when user is near top for infinite scroll
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container || !onLoadOlderMessages) return;
 
-  useLayoutEffect(() => {
-    if (!containerRef.current) return;
-    const children = Array.from(containerRef.current.children);
-    let totalHeight = 0;
-    let count = 0;
-    // Start from the last message and go backwards
-    for (let i = children.length - 1; i >= 0; i--) {
-      const el = children[i] as HTMLElement;
-      totalHeight += el.offsetHeight;
-      count++;
-      if (totalHeight > window.innerHeight * 0.6 && count >= 5) {
-        break;
+    const handleScroll = () => {
+      const scrollTop = container.scrollTop;
+      if (scrollTop < 100 && hasMoreMessages && !isLoadingOlder) {
+        setIsNearTop(true);
+        onLoadOlderMessages();
+      } else {
+        setIsNearTop(false);
       }
-      if (count === 8) {
-        break;
-      }
-    }
-    setVisibleCount(count);
-  }, [messages]);
+    };
 
-  const visibleMessages = messages.slice(-visibleCount);
+    container.addEventListener('scroll', handleScroll);
+    return () => container.removeEventListener('scroll', handleScroll);
+  }, [onLoadOlderMessages, hasMoreMessages, isLoadingOlder]);
 
   return (
     <div ref={containerRef} className="space-y-4 mt-6">
-      {visibleMessages.map((message) => {
+      {/* Loading indicator for older messages */}
+      {isLoadingOlder && (
+        <div className="flex justify-center py-4">
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+        </div>
+      )}
+      
+      {/* Show all messages */}
+      {messages.map((message) => {
         return (
           <div
             key={message.id}

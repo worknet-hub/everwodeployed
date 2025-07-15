@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -87,13 +87,18 @@ export const ReferralModal = ({ isOpen, onClose, userId }: ReferralModalProps) =
   if (hasReferredBy) {
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md" aria-describedby="referral-modal-description">
+          <DialogTitle className="sr-only">Referral</DialogTitle>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <PartyPopper className="h-5 w-5 text-green-500" />
               Welcome aboard! 🚀
             </DialogTitle>
           </DialogHeader>
+          <DialogDescription id="referral-modal-description">
+            Your referral code has been applied successfully! 
+            You're all set to explore the amazing world of Everwo! ✨
+          </DialogDescription>
           <div className="text-center space-y-4">
             <div className="flex justify-center">
               <div className="bg-green-100 dark:bg-green-900/20 p-4 rounded-full">
@@ -115,13 +120,17 @@ export const ReferralModal = ({ isOpen, onClose, userId }: ReferralModalProps) =
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md" aria-describedby="referral-modal-description">
+        <DialogTitle className="sr-only">Referral</DialogTitle>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Gift className="h-5 w-5 text-purple-500" />
             Almost there! 🎁
           </DialogTitle>
         </DialogHeader>
+        <DialogDescription id="referral-modal-description">
+          Enter your referral code or invite a friend.
+        </DialogDescription>
         
         <div className="space-y-6">
           <div className="text-center space-y-2">

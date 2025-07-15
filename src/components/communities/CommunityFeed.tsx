@@ -100,13 +100,7 @@ export const CommunityFeed = ({ community, onBack }: CommunityFeedProps) => {
     fetchCommunityThoughtsCallback();
   }, [fetchCommunityThoughtsCallback]);
 
-  useRealtime({
-    table: 'thoughts',
-    onUpdate: () => {
-      console.log('Realtime event received for thoughts table');
-      fetchCommunityThoughtsCallback();
-    }
-  });
+  // Removed useRealtime subscription for 'thoughts'
 
   // Fetch user interests for composer validation
   useEffect(() => {
@@ -124,11 +118,9 @@ export const CommunityFeed = ({ community, onBack }: CommunityFeedProps) => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading community...</p>
-        </div>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-black">
+        <img src="/logo.webp" alt="Loading..." className="w-48 h-48 object-contain animate-pulse mb-6" style={{ maxWidth: '80vw', maxHeight: '40vh' }} />
+        <span className="text-white text-lg mt-2">Loading community...</span>
       </div>
     );
   }

@@ -10,6 +10,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useRealtime } from '@/hooks/useRealtime';
 import { AvatarUpload } from './AvatarUpload';
+import { useRealtimeProfile } from "@/contexts/RealtimeProfileContext";
 
 interface Profile {
   id: string;
@@ -26,58 +27,18 @@ interface Profile {
   badges: string[];
 }
 
-const QuickProfile = () => {
-  const [profile, setProfile] = useState<Profile | null>(null);
+export const QuickProfile = ({ userId, onClose }: QuickProfileProps) => {
+  const { profiles } = useRealtimeProfile();
+  const profile = profiles?.find((p: any) => p.id === userId) || null;
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const fetchProfile = async () => {
-    if (!user?.id) return;
-
-    const { data: profileData } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', user.id)
-      .single();
-
-    if (profileData) {
-      const formattedProfile: Profile = {
-        id: profileData.id,
-        full_name: profileData.full_name || 'Anonymous User',
-        username: profileData.username || '',
-        avatar_url: profileData.avatar_url || '',
-        bio: profileData.bio || '',
-        college_name: profileData.college_name || '',
-        college_verified: profileData.college_verified || false,
-        skills: profileData.skills || [],
-        rating: profileData.rating || 0,
-        location: profileData.location || '',
-        availability_status: profileData.availability_status || 'available',
-        badges: profileData.badges || []
-      };
-      setProfile(formattedProfile);
-    }
-  };
-
-  const handleAvatarChange = (newAvatarUrl: string) => {
-    if (profile) {
-      setProfile({
-        ...profile,
-        avatar_url: newAvatarUrl
-      });
-    }
-  };
-
   // Use real-time updates for profile data
-  useRealtime({
-    table: 'profiles',
-    filter: user?.id ? `id=eq.${user.id}` : undefined,
-    onUpdate: fetchProfile
-  });
+  // Removed useRealtime subscription for profiles
 
   useEffect(() => {
     if (user?.id) {
-      fetchProfile();
+      // fetchProfile(); // This line is removed
     }
   }, [user?.id]);
 
@@ -107,7 +68,7 @@ const QuickProfile = () => {
           <AvatarUpload
             currentAvatar={profile.avatar_url}
             userName={profile.full_name}
-            onAvatarChange={handleAvatarChange}
+            onAvatarChange={() => {}} // No longer needed
             size="md"
           />
         </div>

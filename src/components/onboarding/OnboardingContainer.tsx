@@ -152,8 +152,9 @@ export const OnboardingContainer = () => {
 
   if (loading || !user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-950">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-black">
+        <img src="/logo.webp" alt="Loading..." className="w-48 h-48 object-contain animate-pulse mb-6" style={{ maxWidth: '80vw', maxHeight: '40vh' }} />
+        <span className="text-white text-lg mt-2">Checking onboarding status...</span>
       </div>
     );
   }

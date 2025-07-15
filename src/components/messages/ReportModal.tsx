@@ -6,6 +6,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
+  DialogDescription,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -95,10 +96,14 @@ export const ReportModal = ({ isOpen, onClose, message }: ReportModalProps) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md" aria-describedby="report-modal-description">
+        <DialogTitle className="sr-only">Report Message</DialogTitle>
         <DialogHeader>
           <DialogTitle>Report Message</DialogTitle>
         </DialogHeader>
+        <DialogDescription id="report-modal-description">
+          Please provide a reason for reporting this message.
+        </DialogDescription>
         
         <div className="space-y-4">
           <div className="p-3 bg-gray-50 rounded-md">

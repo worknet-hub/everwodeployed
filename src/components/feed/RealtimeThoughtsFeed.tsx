@@ -5,6 +5,7 @@ import { useRealtime } from '@/hooks/useRealtime';
 import { useUserPresence } from '@/hooks/useUserPresence';
 import { Badge } from '@/components/ui/badge';
 import { Users } from 'lucide-react';
+import { useRealtimeThoughts } from "@/contexts/RealtimeThoughtsContext";
 
 interface Thought {
   id: string;
@@ -24,83 +25,22 @@ interface Thought {
 }
 
 export const RealtimeThoughtsFeed = () => {
-  const [thoughts, setThoughts] = useState<Thought[]>([]);
+  const { thoughts } = useRealtimeThoughts();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { onlineUsers } = useUserPresence('thoughts-feed');
 
-  const fetchThoughts = async () => {
-    try {
-      setError(null);
-      const { data: thoughtsData, error: fetchError } = await supabase
-        .from('thoughts')
-        .select(`
-          *,
-          profiles:user_id (
-            full_name,
-            avatar_url,
-            college_name,
-            college_verified,
-            username
-          )
-        `)
-        .order('created_at', { ascending: false })
-        .limit(20);
-
-      if (fetchError) {
-        console.error('Error fetching thoughts:', fetchError);
-        setError('Failed to load thoughts');
-        return;
-      }
-
-      if (thoughtsData) {
-        const formattedThoughts = thoughtsData.map(thought => ({
-          id: thought.id,
-          content: thought.content,
-          image_url: thought.image_url,
-          tags: thought.tags || [],
-          likes_count: thought.likes_count || 0,
-          comments_count: thought.comments_count || 0,
-          created_at: thought.created_at,
-          user: {
-            name: thought.profiles?.full_name || 'Anonymous',
-            avatar: thought.profiles?.avatar_url || '',
-            college: thought.profiles?.college_name || '',
-            verified: thought.profiles?.college_verified || false,
-            username: thought.profiles?.username || ''
-          }
-        }));
-        setThoughts(formattedThoughts);
-      }
-    } catch (err) {
-      console.error('Error in fetchThoughts:', err);
-      setError('Failed to load thoughts');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useRealtime({
-    table: 'thoughts',
-    onUpdate: fetchThoughts
-  });
-
-  useRealtime({
-    table: 'thought_likes',
-    onUpdate: fetchThoughts
-  });
-
-  useRealtime({
-    table: 'thought_comments',
-    onUpdate: fetchThoughts
-  });
-
   useEffect(() => {
-    fetchThoughts();
-  }, []);
+    setLoading(false);
+  }, [thoughts]);
 
   if (loading) {
-    return <div className="p-6 text-white">Loading thoughts...</div>;
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-black">
+        <img src="/logo.webp" alt="Loading..." className="w-48 h-48 object-contain animate-pulse mb-6" style={{ maxWidth: '80vw', maxHeight: '40vh' }} />
+        <span className="text-white text-lg mt-2">Loading thoughts...</span>
+      </div>
+    );
   }
 
   if (error) {
@@ -108,7 +48,7 @@ export const RealtimeThoughtsFeed = () => {
       <div className="p-6 text-red-400 text-center">
         <p>{error}</p>
         <button 
-          onClick={fetchThoughts}
+          onClick={() => {}}
           className="mt-2 px-4 py-2 bg-white text-black rounded hover:bg-gray-200"
         >
           Try Again
@@ -140,7 +80,7 @@ export const RealtimeThoughtsFeed = () => {
       </div>
 
       {/* Thoughts List */}
-      {thoughts.map((thought) => (
+      {thoughts.map((thought: any) => (
         <ThoughtCard
           key={thought.id}
           content={thought.content}

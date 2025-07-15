@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -17,7 +17,6 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [username, setUsername] = useState('');
-  const [college, setCollege] = useState('');
   const [loading, setLoading] = useState(false);
   const { signIn, signUp } = useAuth();
 
@@ -29,8 +28,7 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
       if (isSignUp) {
         const { error } = await signUp(email, password, {
           full_name: fullName,
-          username: username,
-          college_name: college
+          username: username
         });
         if (error) throw error;
         toast.success('Check your email to verify your account!');
@@ -52,10 +50,14 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md" aria-describedby="auth-modal-description">
+        <DialogTitle className="sr-only">Authentication</DialogTitle>
         <DialogHeader>
           <DialogTitle>{isSignUp ? 'Create Account' : 'Sign In'}</DialogTitle>
         </DialogHeader>
+        <DialogDescription id="auth-modal-description">
+          Please sign in to continue.
+        </DialogDescription>
         <form onSubmit={handleSubmit} className="space-y-4">
           {isSignUp && (
             <>
@@ -75,14 +77,6 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   required
-                />
-              </div>
-              <div>
-                <Label htmlFor="college">College</Label>
-                <Input
-                  id="college"
-                  value={college}
-                  onChange={(e) => setCollege(e.target.value)}
                 />
               </div>
             </>

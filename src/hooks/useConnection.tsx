@@ -45,3 +45,31 @@ export const useConnection = (userId?: string) => {
     sendConnectionRequest
   };
 };
+
+export const getPendingSentRequests = async (userId: string) => {
+  if (!userId) return [];
+  const { data, error } = await supabase
+    .from('connections')
+    .select('addressee_id')
+    .eq('requester_id', userId)
+    .eq('status', 'pending');
+  if (error) {
+    console.error('Error fetching pending sent requests:', error);
+    return [];
+  }
+  return data ? data.map((c: any) => c.addressee_id) : [];
+};
+
+export const cancelPendingRequest = async (requesterId: string, addresseeId: string) => {
+  if (!requesterId || !addresseeId) return;
+  const { error } = await supabase
+    .from('connections')
+    .delete()
+    .eq('requester_id', requesterId)
+    .eq('addressee_id', addresseeId)
+    .eq('status', 'pending');
+  if (error) {
+    console.error('Error cancelling pending request:', error);
+    throw error;
+  }
+};

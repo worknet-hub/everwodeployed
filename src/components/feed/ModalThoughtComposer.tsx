@@ -5,8 +5,9 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { MentionInput } from './MentionInput';
-import { X } from 'lucide-react';
+import { X, Image as GalleryIcon } from 'lucide-react';
 import ReactDOM from 'react-dom';
+import { Select } from '@/components/ui/select';
 
 interface ModalThoughtComposerProps {
   isOpen: boolean;
@@ -29,6 +30,7 @@ export const ModalThoughtComposer = ({
   const [content, setContent] = useState(initialContent);
   const [mentions, setMentions] = useState<any[]>([]);
   const [isPosting, setIsPosting] = useState(false);
+  const [visibility, setVisibility] = useState<'public' | 'connections'>('public');
 
   // Load draft from localStorage on mount
   useEffect(() => {
@@ -92,17 +94,59 @@ export const ModalThoughtComposer = ({
         user_id: user.id,
         mentions: mentions,
         community_id: communityId,
-        parent_id: parentId || null
+        parent_id: parentId || null,
+        visibility,
       };
 
-      const { error } = await supabase
+      const { data: inserted, error } = await supabase
         .from('thoughts')
-        .insert(thoughtData);
+        .insert(thoughtData)
+        .select('*')
+        .single();
 
       if (error) {
         toast.error('Failed to post thought: ' + error.message);
         return;
       }
+
+      // --- Notification logic ---
+      const username = user.user_metadata?.username || user.user_metadata?.full_name || user.email || 'Someone';
+      // If this is a reply (comment), notify the parent thought's author
+      if (parentId) {
+        // Fetch parent thought to get author
+        const { data: parentThought } = await supabase
+          .from('thoughts')
+          .select('user_id')
+          .eq('id', parentId)
+          .single();
+        if (parentThought && parentThought.user_id !== user.id) {
+          await supabase.from('notifications').insert({
+            user_id: parentThought.user_id,
+            type: 'comment',
+            title: 'New Comment',
+            content: `@${username} commented on your thought: "${content.slice(0, 50)}"`,
+            link: `/thought/${parentId}`,
+            is_read: false
+          });
+        }
+      }
+      // Mentions: notify each mentioned user (excluding self and parent author)
+      const mentionedUserIds = mentions
+        .filter(m => m.type === 'person' && m.id !== user.id)
+        .map(m => m.id);
+      // Remove duplicates
+      const uniqueMentionedUserIds = [...new Set(mentionedUserIds)];
+      for (const mentionedId of uniqueMentionedUserIds) {
+        await supabase.from('notifications').insert({
+          user_id: mentionedId,
+          type: 'mention',
+          title: 'Mention',
+          content: `@${username} mentioned you in a thought`,
+          link: `/thought/${inserted?.id || parentId || ''}`,
+          is_read: false
+        });
+      }
+      // --- End notification logic ---
 
       setContent('');
       setMentions([]);
@@ -141,9 +185,9 @@ export const ModalThoughtComposer = ({
 
   const modal = (
     <div className="modal-overlay" onClick={handleOverlayClick}>
-      <div className="modal-content">
+      <div className="modal-content max-w-md w-full mx-auto">
         <Card className="glass-card">
-          <CardContent className="p-6 space-y-4">
+          <CardContent className="p-4 space-y-3">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-white">
                 {parentId ? 'Write a reply' : 'Share your thoughts'}
@@ -158,6 +202,19 @@ export const ModalThoughtComposer = ({
               </Button>
             </div>
 
+            <div className="mb-2 flex items-center gap-2">
+              <label htmlFor="visibility" className="text-sm font-medium text-white">Visibility:</label>
+              <select
+                id="visibility"
+                value={visibility}
+                onChange={e => setVisibility(e.target.value as 'public' | 'connections')}
+                className="custom-select rounded-full px-3 py-1 border border-white/20 focus:outline-none backdrop-blur-sm"
+              >
+                <option value="public">Everyone</option>
+                <option value="connections">Connections only</option>
+              </select>
+            </div>
+
             <MentionInput
               value={content}
               onChange={handleContentChange}
@@ -165,12 +222,20 @@ export const ModalThoughtComposer = ({
               className="min-h-[120px] resize-none w-full p-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white/5 text-white placeholder-gray-400"
             />
 
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-400">
+            <div className="flex items-center">
+              <span className="text-xs text-gray-400 flex-1">
                 {content.length}/500 characters
-                {mentions.length > 0 && ` • ${mentions.length} mention${mentions.length > 1 ? 's' : ''}`}
+                {mentions.length > 0 && ` • ${mentions.length > 1 ? 's' : ''}`}
               </span>
-              <div className="flex gap-2">
+              <div className="flex gap-2 items-center">
+                {/* Gallery icon button for both mobile and desktop, no box, right-aligned */}
+                <button
+                  type="button"
+                  className="flex items-center justify-center p-0 bg-transparent border-none shadow-none hover:bg-transparent focus:outline-none ml-2"
+                  title="Add media"
+                >
+                  <GalleryIcon className="w-6 h-6 text-gray-400" />
+                </button>
                 <Button 
                   variant="outline"
                   onClick={handleClose}

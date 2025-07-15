@@ -8,9 +8,18 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, Star, MapPin, Users, Verified, User } from 'lucide-react';
-import Fuse from 'fuse.js';
 import { supabase } from '@/integrations/supabase/client';
 import { useRealtime } from '@/hooks/useRealtime';
+
+// Dynamically import Fuse.js only when needed
+let Fuse: any = null;
+const loadFuse = async () => {
+  if (!Fuse) {
+    const fuseModule = await import('fuse.js');
+    Fuse = fuseModule.default;
+  }
+  return Fuse;
+};
 
 interface Profile {
   id: string;
@@ -105,31 +114,28 @@ export const SearchPage = () => {
   };
 
   // Add real-time updates for profiles and gigs
-  useRealtime({
-    table: 'profiles',
-    onUpdate: fetchData
-  });
-
-  useRealtime({
-    table: 'gigs',
-    onUpdate: fetchData
-  });
+  // Removed useRealtime subscriptions for 'profiles' and 'gigs'
 
   useEffect(() => {
     fetchData();
   }, []);
 
-  useEffect(() => {
-    filterResults();
-  }, [searchTerm, skillFilter, locationFilter, ratingFilter, profiles, gigs]);
-
-  const filterResults = () => {
+  const filterResults = async () => {
+    const Fuse = await loadFuse();
     let filtered = profiles;
 
-    // Apply filters
-    if (skillFilter && skillFilter !== 'all') {
+    if (searchTerm) {
+      const fuse = new Fuse(profiles, {
+        keys: ['full_name', 'username', 'bio', 'skills', 'college_name'],
+        threshold: 0.3,
+        includeScore: true
+      });
+      filtered = fuse.search(searchTerm).map(result => result.item);
+    }
+
+    if (skillFilter) {
       filtered = filtered.filter(profile => 
-        profile.skills.some(skill => 
+        profile.skills?.some(skill => 
           skill.toLowerCase().includes(skillFilter.toLowerCase())
         )
       );
@@ -137,40 +143,20 @@ export const SearchPage = () => {
 
     if (locationFilter) {
       filtered = filtered.filter(profile => 
-        profile.location.toLowerCase().includes(locationFilter.toLowerCase())
+        profile.location?.toLowerCase().includes(locationFilter.toLowerCase())
       );
     }
 
-    if (ratingFilter && ratingFilter !== 'all') {
-      const minRating = parseFloat(ratingFilter);
-      filtered = filtered.filter(profile => profile.rating >= minRating);
-    }
-
-    // Apply search with Fuse.js for fuzzy search
-    if (searchTerm) {
-      const fuse = new Fuse(filtered, {
-        keys: ['full_name', 'bio', 'skills', 'college_name'],
-        threshold: 0.3
-      });
-      const result = fuse.search(searchTerm);
-      filtered = result.map(item => item.item);
+    if (ratingFilter) {
+      filtered = filtered.filter(profile => profile.rating >= ratingFilter);
     }
 
     setFilteredProfiles(filtered);
-
-    // Filter gigs similarly
-    let filteredGigsResult = gigs;
-    if (searchTerm) {
-      const gigsFuse = new Fuse(filteredGigsResult, {
-        keys: ['title', 'description', 'skills'],
-        threshold: 0.3
-      });
-      const gigsResult = gigsFuse.search(searchTerm);
-      filteredGigsResult = gigsResult.map(item => item.item);
-    }
-
-    setFilteredGigs(filteredGigsResult);
   };
+
+  useEffect(() => {
+    filterResults();
+  }, [searchTerm, skillFilter, locationFilter, ratingFilter, profiles, gigs]);
 
   const allSkills = Array.from(new Set(profiles.flatMap(p => p.skills)));
 

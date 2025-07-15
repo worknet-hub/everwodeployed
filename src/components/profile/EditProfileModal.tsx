@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -32,6 +32,7 @@ interface EditProfileModalProps {
 }
 
 export const EditProfileModal = ({ isOpen, onClose, profile, onProfileUpdated }: EditProfileModalProps) => {
+  if (!profile) return null;
   const [formData, setFormData] = useState({
     full_name: profile.full_name,
     username: profile.username,
@@ -108,10 +109,13 @@ export const EditProfileModal = ({ isOpen, onClose, profile, onProfileUpdated }:
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-y-auto" aria-describedby="edit-profile-modal-description">
         <DialogHeader>
           <DialogTitle>Edit Profile</DialogTitle>
         </DialogHeader>
+        <DialogDescription id="edit-profile-modal-description">
+          Update your profile information below.
+        </DialogDescription>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -152,7 +156,8 @@ export const EditProfileModal = ({ isOpen, onClose, profile, onProfileUpdated }:
               <Input
                 id="college_name"
                 value={formData.college_name}
-                onChange={(e) => setFormData(prev => ({ ...prev, college_name: e.target.value }))}
+                disabled
+                readOnly
               />
             </div>
             <div>

@@ -1,34 +1,39 @@
 
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext, createContext, ReactNode } from 'react';
 import { User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { isAdminCredentials, isAdminUser } from '@/utils/adminUtils';
 
-export const useAuth = () => {
+interface AuthContextType {
+  user: User | null;
+  loading: boolean;
+  isAdmin: boolean;
+  signIn: (email: string, password: string) => Promise<{ error: any } | undefined>;
+  signUp: (email: string, password: string, userData: any) => Promise<{ error: any } | undefined>;
+  signOut: () => Promise<{ error: any } | undefined>;
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     let mounted = true;
-
     const initializeAuth = async () => {
       try {
-        // Get initial session
         const { data: { session }, error } = await supabase.auth.getSession();
-        
         if (error) {
           console.error('Error getting session:', error);
         }
-
         if (mounted) {
           const currentUser = session?.user ?? null;
           const adminStatus = currentUser ? isAdminUser(currentUser.email || '') : false;
-          
           setUser(currentUser);
           setIsAdmin(adminStatus);
           setLoading(false);
-          
           console.log('Auth initialized:', { user: !!currentUser, isAdmin: adminStatus });
         }
       } catch (error) {
@@ -40,23 +45,17 @@ export const useAuth = () => {
         }
       }
     };
-
     initializeAuth();
-
-    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log('Auth state change:', event, !!session?.user);
-      
       if (mounted) {
         const currentUser = session?.user ?? null;
         const adminStatus = currentUser ? isAdminUser(currentUser.email || '') : false;
-        
         setUser(currentUser);
         setIsAdmin(adminStatus);
         setLoading(false);
       }
     });
-
     return () => {
       mounted = false;
       subscription.unsubscribe();
@@ -64,11 +63,7 @@ export const useAuth = () => {
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    // Check for admin credentials first
     if (isAdminCredentials(email, password)) {
-      console.log('Admin credentials detected, creating proper admin session');
-      
-      // Create a proper user session for admin
       const adminUser = {
         id: 'admin-user-uuid-12345',
         email,
@@ -79,14 +74,11 @@ export const useAuth = () => {
         aud: 'authenticated',
         role: 'authenticated'
       } as User;
-      
       setUser(adminUser);
       setIsAdmin(true);
       setLoading(false);
-      
       return { error: null };
     }
-    
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     return { error };
   };
@@ -95,9 +87,7 @@ export const useAuth = () => {
     const { error } = await supabase.auth.signUp({
       email,
       password,
-      options: {
-        data: userData
-      }
+      options: { data: userData }
     });
     return { error };
   };
@@ -111,12 +101,17 @@ export const useAuth = () => {
     return { error };
   };
 
-  return {
-    user,
-    loading,
-    isAdmin,
-    signIn,
-    signUp,
-    signOut
-  };
+  return (
+    <AuthContext.Provider value={{ user, loading, isAdmin, signIn, signUp, signOut }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
 };

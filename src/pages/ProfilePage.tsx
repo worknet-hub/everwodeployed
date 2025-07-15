@@ -4,10 +4,11 @@ import { useParams } from 'react-router-dom';
 
 const ProfilePage = () => {
   const { userId } = useParams();
-  console.log('userId from URL:', userId);
+  const safeUserId = typeof userId === 'string' ? userId : '';
+  console.log('userId from URL:', safeUserId);
   return (
     <div data-tour="profile">
-      <ProfilePageComponent userId={userId} />
+      <ProfilePageComponent userId={safeUserId} />
     </div>
   );
 };

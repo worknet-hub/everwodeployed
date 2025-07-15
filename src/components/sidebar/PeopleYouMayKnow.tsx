@@ -2,24 +2,79 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Users, ExternalLink, UserPlus, User } from 'lucide-react';
+import { Users, ExternalLink, UserPlus, User, UserCheck } from 'lucide-react';
 import { useTrendingData } from '@/hooks/useTrendingData';
-import { useConnection } from '@/hooks/useConnection';
+import { useConnection, getPendingSentRequests, cancelPendingRequest } from '@/hooks/useConnection';
+import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { useState, useEffect } from 'react';
+import { useRealtime } from '@/hooks/useRealtime';
 
 const PeopleYouMayKnow = () => {
   const { suggestedUsers, loading } = useTrendingData();
   const { sendConnectionRequest } = useConnection();
+  const { user } = useAuth();
   const navigate = useNavigate();
+  const [requested, setRequested] = useState<Set<string>>(new Set());
+  const [pendingRemovals, setPendingRemovals] = useState<Set<string>>(new Set());
+
+  // Fetch pending requests on mount and when user changes
+  useEffect(() => {
+    const fetchPending = async () => {
+      if (user?.id) {
+        const pending = await getPendingSentRequests(user.id);
+        // Merge server state with local pending removals
+        setRequested(prev => {
+          const merged = new Set(pending);
+          // Remove any IDs that are in pendingRemovals
+          pendingRemovals.forEach(id => merged.delete(id));
+          return merged;
+        });
+      }
+    };
+    fetchPending();
+    // Only re-run when user changes or pendingRemovals changes
+  }, [user?.id, pendingRemovals]);
 
   const handleConnect = async (userId: string, userName: string) => {
+    if (requested.has(userId)) {
+      // Optimistic UI update: remove immediately and track as pending
+      setRequested(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(userId);
+        return newSet;
+      });
+      setPendingRemovals(prev => new Set(prev).add(userId));
+      try {
+        if (user?.id) {
+          await cancelPendingRequest(user.id, userId);
+          toast.success('Connection request cancelled');
+        }
+      } catch (error) {
+        // Revert if failed
+        setRequested(prev => new Set(prev).add(userId));
+        setPendingRemovals(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(userId);
+          return newSet;
+        });
+        toast.error('Failed to cancel connection request');
+      }
+      return;
+    }
     try {
       await sendConnectionRequest(userId);
+      setRequested(prev => new Set(prev).add(userId));
       toast.success(`Connection request sent to ${userName}`);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error sending connection request:', error);
-      toast.error('Failed to send connection request');
+      if (error && (error.code === '23505' || (error.message && error.message.includes('duplicate key value')))) {
+        setRequested(prev => new Set(prev).add(userId));
+        toast.error('Request already sent');
+      } else {
+        toast.error('Failed to send connection request');
+      }
     }
   };
 
@@ -87,10 +142,14 @@ const PeopleYouMayKnow = () => {
               <Button 
                 size="sm" 
                 variant="outline" 
-                className="text-xs bg-white/20 text-white border-white/20 hover:bg-white/30"
+                className={`text-xs bg-white/20 text-white border-white/20 hover:bg-white/30 ${requested.has(person.id) ? 'cursor-pointer' : ''}`}
                 onClick={() => handleConnect(person.id, person.name)}
               >
-                <UserPlus className="w-3 h-3" />
+                {requested.has(person.id) ? (
+                  <UserCheck className="w-3 h-3" />
+                ) : (
+                  <UserPlus className="w-3 h-3" />
+                )}
               </Button>
             </div>
           ))

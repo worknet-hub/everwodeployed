@@ -126,16 +126,6 @@ const TrendingSidebar = ({ onCommunitySelect }: TrendingSidebarProps) => {
           )}
         </CardContent>
       </Card>
-      {/* Onboarding Button (show only if not completed) */}
-      {onboardingCompleted === false && (
-        <Button 
-          variant="secondary" 
-          className="w-full text-sm font-semibold" 
-          onClick={() => navigate('/onboarding')}
-        >
-          🚀 Start Onboarding
-        </Button>
-      )}
       {/* Quick Stats */}
       <Card className="bg-[rgba(0,0,0,0.7)] shadow-2xl border border-white/10 text-white">
         <CardContent className="pt-6">

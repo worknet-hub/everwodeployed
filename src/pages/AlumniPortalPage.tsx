@@ -138,8 +138,9 @@ const AlumniPortalPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-blue-50 to-purple-50">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-black">
+        <img src="/logo.webp" alt="Loading..." className="w-48 h-48 object-contain animate-pulse mb-6" style={{ maxWidth: '80vw', maxHeight: '40vh' }} />
+        <span className="text-white text-lg mt-2">Loading alumni portal...</span>
       </div>
     );
   }
@@ -176,7 +177,7 @@ const AlumniPortalPage = () => {
                 <span className="text-black font-bold text-xl">🎓</span>
               </div>
               <div>
-                <h1 className="text-xl font-bold text-gray-900">Camzy Alumni Portal</h1>
+                <h1 className="text-xl font-bold text-gray-900">Everwo Alumni Portal</h1>
                 <p className="text-sm text-gray-600">
                   Welcome back, {alumniProfile.full_name}{isAdmin ? ' (Admin)' : ''}
                 </p>
@@ -284,6 +285,7 @@ const AlumniPortalPage = () => {
                     <Button variant="outline" className="w-full">Post a Job</Button>
                   </DialogTrigger>
                   <DialogContent className="max-w-md">
+                    <DialogTitle className="sr-only">Post a Job</DialogTitle>
                     <DialogHeader>
                       <DialogTitle>Post a Job</DialogTitle>
                       <DialogDescription>Share an exclusive opportunity with fellow alumni</DialogDescription>
@@ -399,6 +401,7 @@ const AlumniPortalPage = () => {
                     </Button>
                   </DialogTrigger>
                   <DialogContent>
+                    <DialogTitle className="sr-only">Request Mentorship</DialogTitle>
                     <DialogHeader>
                       <DialogTitle>Request Mentorship</DialogTitle>
                       <DialogDescription>Connect with experienced alumni for guidance</DialogDescription>

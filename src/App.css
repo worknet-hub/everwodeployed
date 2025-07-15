@@ -66,9 +66,10 @@ html, body {
 .modal-content {
   width: 100%;
   max-width: 480px;
-  margin: 0 1rem;
+  margin: auto;
   animation: modal-drop-in 0.35s cubic-bezier(0.4,0,0.2,1);
   transform-origin: center top;
+  flex-direction: column;
 }
 
 @keyframes modal-drop-in {
@@ -91,9 +92,27 @@ html, body {
 }
 
 /* Force modal overlay and content to be visible and on top */
-.modal-overlay, .modal-content {
+.modal-overlay {
   display: flex !important;
   z-index: 99999 !important;
   opacity: 1 !important;
   pointer-events: all !important;
+}
+.modal-content {
+  z-index: 99999 !important;
+  opacity: 1 !important;
+  pointer-events: all !important;
+}
+
+.custom-select {
+  border-radius: 9999px !important;
+  font-size: 0.85rem !important;
+  background: rgba(0,0,0,0.6) !important;
+  color: #fff !important;
+}
+.custom-select option {
+  border-radius: 9999px !important;
+  font-size: 0.85rem !important;
+  background: rgba(0,0,0,0.6) !important;
+  color: #fff !important;
 }

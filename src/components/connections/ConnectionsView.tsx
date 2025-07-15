@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Search, UserPlus, Check, X, MessageCircle, Users, User } from 'lucide-react';
+import { Search, UserPlus, Check, X, MessageCircle, Users, User, UserCheck } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
@@ -22,6 +22,8 @@ import {
   AlertDialogAction,
   AlertDialogCancel,
 } from '@/components/ui/alert-dialog';
+import React from 'react';
+import { Switch } from '@/components/ui/switch';
 
 interface Connection {
   connection_id: string;
@@ -55,6 +57,7 @@ export const ConnectionsView = () => {
   const [loading, setLoading] = useState(false);
   const [allProfiles, setAllProfiles] = useState<Profile[]>([]);
   const [highlightedRequestId, setHighlightedRequestId] = useState<string | null>(null);
+  const [collegeOnly, setCollegeOnly] = useState(false);
 
   const fetchConnections = useCallback(async () => {
     if (!user?.id) return;
@@ -98,45 +101,25 @@ export const ConnectionsView = () => {
     }
   }, [user?.id]);
 
-  // Add real-time updates for connections and profiles
-  useRealtime({
-    table: 'connections',
-    onUpdate: fetchConnections
+  // Removed useRealtime subscriptions for 'connections' and 'profiles' to prevent duplicate subscriptions
+
+  // Remove searchUsers function and button click logic for search
+  // Add a derived filteredUsers variable that filters allProfiles in real time as the user types
+  const searchLower = searchTerm.trim().toLowerCase();
+  const filteredUsers = (collegeOnly && currentUserProfile?.college_name
+    ? allProfiles.filter(profile => profile.college_name && profile.college_name.toLowerCase() === currentUserProfile.college_name.toLowerCase())
+    : allProfiles
+  ).filter(profile => {
+    if (!searchLower) return true;
+    const fullName = profile.full_name?.toLowerCase() || '';
+    const username = profile.username?.toLowerCase() || '';
+    const interests = (profile.interests || []).map(i => i.toLowerCase()).join(' ');
+    return (
+      fullName.includes(searchLower) ||
+      username.includes(searchLower) ||
+      interests.includes(searchLower)
+    );
   });
-
-  useRealtime({
-    table: 'profiles',
-    onUpdate: () => {
-      fetchCurrentUserProfile();
-      if (searchTerm) {
-        searchUsers();
-      }
-    }
-  });
-
-  const searchUsers = async () => {
-    if (!searchTerm.trim() || !user?.id) return;
-    setLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('id, full_name, avatar_url, bio, skills, interests, college_name, username')
-        .neq('id', user.id)
-        .or(`full_name.ilike.%${searchTerm}%,username.ilike.%${searchTerm}%,bio.ilike.%${searchTerm}%,skills.cs.{${searchTerm}},interests.cs.{${searchTerm}}`)
-        .limit(10);
-
-      if (error) {
-        console.error('Error searching users:', error);
-        toast.error('Failed to search users');
-      } else {
-        setSearchResults(data || []);
-      }
-    } catch (err) {
-      console.error('Error searching users:', err);
-      toast.error('Failed to search users');
-    }
-    setLoading(false);
-  };
 
   const getCommonInterests = (userInterests: string[], searchedUserInterests: string[]) => {
     if (!userInterests || !searchedUserInterests) return [];
@@ -270,7 +253,7 @@ export const ConnectionsView = () => {
   };
 
   // Handler for connect button
-  const handleConnectClick = (profile: Profile) => {
+  const handleConnectClick = async (profile: Profile) => {
     const { sent, received } = getConnectionStatus(profile.id);
     if (received) {
       // Redirect to requests tab, scroll and highlight
@@ -284,13 +267,37 @@ export const ConnectionsView = () => {
       }, 100); // Wait for tab switch
       document.querySelector('[data-state="requests"]')?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     } else if (!sent) {
-      sendConnectionRequest(profile.id, profile);
+      await sendConnectionRequest(profile.id, profile);
+      fetchConnections();
+      fetchAllProfiles();
+    } else if (sent) {
+      try {
+        const pending = connections.find(
+          c => c.partner_id === profile.id && c.status === 'pending' && c.requester_id === user.id
+        );
+        if (pending) {
+          await supabase.from('connections').delete().eq('id', pending.connection_id);
+          toast.success('Connection request cancelled');
+          fetchConnections();
+          fetchAllProfiles();
+        }
+      } catch (err) {
+        toast.error('Failed to cancel connection request');
+      }
     }
   };
 
+  // Filtered search results based on collegeOnly toggle and selectedInterests
+  const filteredSearchResults = collegeOnly && currentUserProfile?.college_name
+    ? searchResults.filter(profile => profile.college_name && profile.college_name.toLowerCase() === currentUserProfile.college_name.toLowerCase())
+    : searchResults;
+  const filteredAllProfiles = collegeOnly && currentUserProfile?.college_name
+    ? allProfiles.filter(profile => profile.college_name && profile.college_name.toLowerCase() === currentUserProfile.college_name.toLowerCase())
+    : allProfiles;
+
   return (
     <div className="max-w-4xl mx-auto p-0 sm:p-6 border-0 shadow-none rounded-none">
-      <Tabs defaultValue="connections" className="w-full">
+      <Tabs defaultValue="search" className="w-full">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="search"><Search className="w-5 h-5 inline" /></TabsTrigger>
           <TabsTrigger value="requests"><UserPlus className="w-5 h-5 inline" /></TabsTrigger>
@@ -326,7 +333,7 @@ export const ConnectionsView = () => {
                         <div>
                           <h3 className="font-semibold cursor-pointer" onClick={() => navigate(`/profile/${connection.partner_id}`)}>{connection.partner_name}</h3>
                           <p className="text-sm text-muted-foreground">
-                            Connected {new Date(connection.created_at).toLocaleDateString()}
+                            Connected
                           </p>
                         </div>
                       </div>
@@ -402,46 +409,62 @@ export const ConnectionsView = () => {
                 </p>
               ) : (
                 <div className="grid gap-4 mx-0 sm:mx-0 sm:pl-2">
-                  {pendingReceivedArr.map((request) => (
-                    <div
-                      key={request.connection_id}
-                      id={`request-${request.connection_id}`}
-                      className={`flex items-center justify-between p-4 bg-transparent transition-shadow duration-300 ${highlightedRequestId === request.connection_id ? 'ring-4 ring-green-400' : ''}`}
-                    >
-                      <div className="flex items-center space-x-3">
-                        <div className="cursor-pointer" onClick={() => navigate(`/profile/${request.partner_id}`)}>
-                          <Avatar>
-                            <AvatarImage src={request.partner_avatar} />
-                            <AvatarFallback>
-                              <User className="w-6 h-6 text-gray-300" />
-                            </AvatarFallback>
-                          </Avatar>
+                  {pendingReceivedArr.map((request) => {
+                    // Find the requester's profile
+                    const requesterProfile = allProfiles.find(p => p.id === request.partner_id);
+                    const commonInterests = getCommonInterests(currentUserProfile?.interests || [], requesterProfile?.interests || []);
+                    return (
+                      <div
+                        key={request.connection_id}
+                        id={`request-${request.connection_id}`}
+                        className={`flex items-center justify-between p-4 bg-transparent transition-shadow duration-300 ${highlightedRequestId === request.connection_id ? 'ring-4 ring-green-400' : ''}`}
+                      >
+                        <div className="flex items-center space-x-3">
+                          <div className="cursor-pointer" onClick={() => navigate(`/profile/${request.partner_id}`)}>
+                            <Avatar>
+                              <AvatarImage src={request.partner_avatar} />
+                              <AvatarFallback>
+                                <User className="w-6 h-6 text-gray-300" />
+                              </AvatarFallback>
+                            </Avatar>
+                          </div>
+                          <div>
+                            <h3 className="font-semibold cursor-pointer" onClick={() => navigate(`/profile/${request.partner_id}`)}>{request.partner_name}</h3>
+                            <p className="text-sm text-muted-foreground">
+                              Sent
+                            </p>
+                            {/* Show common interests */}
+                            {commonInterests.length > 0 && (
+                              <div className="flex flex-row flex-wrap gap-2 mt-1">
+                                <span className="text-xs mr-2" style={{ color: '#E9E5E4' }}>Common interests:</span>
+                                {commonInterests.map((interest) => (
+                                  <Badge key={interest} style={{ backgroundColor: '#E9E5E4', color: '#1D4ED8', border: 'none' }} className="text-xs">
+                                    {interest}
+                                  </Badge>
+                                ))}
+                              </div>
+                            )}
+                          </div>
                         </div>
-                        <div>
-                          <h3 className="font-semibold cursor-pointer" onClick={() => navigate(`/profile/${request.partner_id}`)}>{request.partner_name}</h3>
-                          <p className="text-sm text-muted-foreground">
-                            Sent {new Date(request.created_at).toLocaleDateString()}
-                          </p>
+                        <div className="flex gap-2">
+                          <Button
+                            onClick={() => handleConnectionRequest(request.connection_id, 'accepted')}
+                            size="sm"
+                            variant="default"
+                          >
+                            <Check className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            onClick={() => handleConnectionRequest(request.connection_id, 'rejected')}
+                            size="sm"
+                            variant="outline"
+                          >
+                            <X className="w-4 h-4" />
+                          </Button>
                         </div>
                       </div>
-                      <div className="flex gap-2">
-                        <Button
-                          onClick={() => handleConnectionRequest(request.connection_id, 'accepted')}
-                          size="sm"
-                          variant="default"
-                        >
-                          <Check className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          onClick={() => handleConnectionRequest(request.connection_id, 'rejected')}
-                          size="sm"
-                          variant="outline"
-                        >
-                          <X className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </CardContent>
@@ -476,7 +499,7 @@ export const ConnectionsView = () => {
                         <div>
                           <h3 className="font-semibold cursor-pointer" onClick={() => navigate(`/profile/${request.partner_id}`)}>{request.partner_name}</h3>
                           <p className="text-sm text-muted-foreground">
-                            Sent {new Date(request.created_at).toLocaleDateString()}
+                            Sent
                           </p>
                         </div>
                       </div>
@@ -510,108 +533,110 @@ export const ConnectionsView = () => {
 
         <TabsContent value="search" className="space-y-4">
           <Card className="glass-card border-0 shadow-none" style={{ background: '#000000B3' }}>
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between gap-2">
               <CardTitle>Find People</CardTitle>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-white font-bold mr-2">Uni-only</span>
+                <Switch checked={collegeOnly} onCheckedChange={setCollegeOnly} />
+              </div>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent>
               <div className="w-full flex gap-2 items-center rounded-lg border-2 border-white opacity-60 px-2 py-1">
                 <div className="relative flex-1">
                   <Input
-                    placeholder="Search by name..."
+                    placeholder="Search by name, username, or interest..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-3 profile-input border-0 outline-none ring-0 focus:outline-none focus:ring-0 focus:border-0 bg-transparent"
-                    onKeyPress={(e) => e.key === 'Enter' && searchUsers()}
                   />
                 </div>
-                <Button onClick={searchUsers} disabled={loading} className="bg-transparent border-0 shadow-none hover:bg-transparent p-0 focus:border-0">
-                  <Search className="w-5 h-5 text-gray-400 hover:text-white" />
-                </Button>
+                <Search className="w-5 h-5 text-gray-400 hover:text-white" />
               </div>
-              <div className="w-full h-px bg-white opacity-20 my-2" />
-
-              {(searchTerm ? searchResults : allProfiles).length > 0 && (
-                <div className="grid gap-4 mx-0 sm:mx-0 sm:pl-2">
-                  {(searchTerm ? searchResults : allProfiles).map((profile, idx, arr) => {
-                    const commonInterests = getCommonInterests(currentUserProfile?.interests || [], profile.interests || []);
-                    const { sent, received, accepted } = getConnectionStatus(profile.id);
-                    const isRequested = sent;
-                    const isAccepted = accepted;
-                    // If accepted, do not show in search results
-                    if (isAccepted) return null;
-                    return (
-                      <>
-                        <div key={profile.id} className="p-6 min-h-[180px] bg-black/60 flex flex-col items-center relative">
-                          {/* University name at top right */}
+              {/* Show users below search bar */}
+              <div className="mt-4">
+                {filteredUsers.length > 0 ? (
+                  <div className="grid gap-4">
+                    {filteredUsers.map((profile) => {
+                      const { sent, received, accepted } = getConnectionStatus(profile.id);
+                      if (accepted) return null; // Hide already connected users
+                      const common = currentUserProfile?.interests && profile.interests ? getCommonInterests(currentUserProfile.interests, profile.interests) : [];
+                      return (
+                        <div key={profile.id} className="relative flex flex-col items-center gap-2 p-6 bg-black/40 rounded-xl border border-white/10 shadow-md">
+                          {/* College badge at top right */}
                           {profile.college_name && (
-                            <div className="absolute top-4 right-4 px-3 py-1 rounded-2xl bg-blue-600/30 text-white text-xs font-medium w-fit backdrop-blur">
+                            <div className="absolute top-4 right-4 px-3 py-1 rounded-full bg-blue-900 text-white text-xs font-semibold tracking-wide">
                               {profile.college_name}
                             </div>
                           )}
-                          {/* Avatar at top center */}
-                          <div className="flex flex-col items-center w-full">
-                            <div className="cursor-pointer mb-2" onClick={() => navigate(`/profile/${profile.id}`)}>
-                              <Avatar className="w-14 h-14 mx-auto">
-                                <AvatarImage src={profile.avatar_url} />
-                                <AvatarFallback>
-                                  <User className="w-8 h-8 text-gray-300" />
-                                </AvatarFallback>
-                              </Avatar>
+                          {/* Avatar */}
+                          <Avatar className="w-16 h-16 mb-2 cursor-pointer" onClick={() => navigate(`/profile/${profile.id}`)}>
+                            <AvatarImage src={profile.avatar_url} />
+                            <AvatarFallback>
+                              <User className="w-8 h-8 text-gray-300" />
+                            </AvatarFallback>
+                          </Avatar>
+                          {/* Username centered and clickable */}
+                          <div className="font-bold text-white text-xl text-center mb-1 cursor-pointer" onClick={() => navigate(`/profile/${profile.id}`)}>
+                            @{profile.username || profile.full_name}
+                          </div>
+                          {/* Interests label */}
+                          <div className="text-gray-300 text-sm font-semibold mb-1">Interests:</div>
+                          {/* Interests badges, max 4, 2 rows */}
+                          {profile.interests && profile.interests.length > 0 && (
+                            <div className="flex flex-wrap gap-2 justify-center mb-1">
+                              {profile.interests.slice(0, 4).map((interest) => (
+                                <span key={interest} className="bg-[#222] text-white font-semibold rounded-2xl px-4 py-1 text-base">{interest}</span>
+                              ))}
                             </div>
-                            <h3 className="font-semibold text-lg cursor-pointer mb-2" onClick={() => navigate(`/profile/${profile.id}`)}>{profile.username || 'unknown-user'}</h3>
-                            {/* Interests in a single line */}
-                            {profile.interests && profile.interests.length > 0 && (
-                              <div className="flex flex-col w-full mb-1">
-                                <span className="text-xs text-muted-foreground mb-1 self-center text-center">Interests:</span>
-                                <div className="flex flex-wrap gap-2 justify-start">
-                                  {profile.interests.slice(0, 4).map((interest) => (
-                                    <Badge 
-                                      key={interest} 
-                                      style={{ backgroundColor: '#3A3736', color: '#fff', border: 'none' }} 
-                                      className="text-xs"
-                                    >
-                                      {interest}
-                                    </Badge>
-                                  ))}
-                                  {profile.interests.length > 4 && (
-                                    <span className="text-xs text-muted-foreground">+{profile.interests.length - 4} more</span>
-                                  )}
-                                </div>
-                              </div>
-                            )}
-                            {/* Common interests in a single line */}
-                            {commonInterests.length > 0 && (
-                              <div className="flex flex-row flex-wrap gap-2 justify-center items-center w-full mt-1">
-                                <span className="text-xs" style={{ color: '#E9E5E4' }} mr-2>Common:</span>
-                                {commonInterests.map((interest) => (
-                                  <Badge key={interest} style={{ backgroundColor: '#E9E5E4', color: '#1D4ED8', border: 'none' }} className="text-xs">
-                                    {interest}
-                                  </Badge>
+                          )}
+                          {/* +N more if more than 4 interests */}
+                          {profile.interests && profile.interests.length > 4 && (
+                            <div className="text-gray-400 text-sm mb-1">+{profile.interests.length - 4} more</div>
+                          )}
+                          {/* Common interests row */}
+                          {common.length > 0 && (
+                            <div className="w-full flex flex-col items-center mt-2">
+                              <div className="text-gray-300 text-base font-semibold mb-1">Common:</div>
+                              <div className="flex flex-wrap gap-2 justify-center">
+                                {common.map((interest) => (
+                                  <span key={interest} className="bg-white text-blue-700 font-bold rounded-2xl px-4 py-1 text-base">{interest}</span>
                                 ))}
                               </div>
-                            )}
-                          </div>
-                          {/* Connect button below common interests */}
-                          <div className="w-full flex justify-center mt-4 mb-8">
-                            <Button
-                              onClick={() => handleConnectClick(profile)}
-                              size="sm"
-                              className={`flex items-center gap-2 ${isRequested ? 'bg-gray-400 text-white cursor-not-allowed' : 'bg-white border border-white text-black hover:bg-gray-100 hover:border-gray-200'}`}
-                              disabled={isRequested}
-                            >
-                              <UserPlus className={`w-4 h-4 ${isRequested ? 'text-white' : 'text-black'}`} />
-                              {isRequested ? 'Requested' : 'Request'}
-                            </Button>
-                          </div>
+                            </div>
+                          )}
+                          {/* Request button centered below */}
+                          <Button
+                            size="sm"
+                            disabled={received}
+                            onClick={() => {
+                              if (sent) {
+                                // Cancel the sent request (delete the connection row)
+                                const pending = connections.find(
+                                  c => c.partner_id === profile.id && c.status === 'pending' && c.requester_id === user.id
+                                );
+                                if (pending) {
+                                  supabase.from('connections').delete().eq('id', pending.connection_id).then(() => {
+                                    fetchConnections();
+                                    fetchAllProfiles();
+                                  });
+                                }
+                              } else {
+                                handleConnectClick(profile);
+                              }
+                            }}
+                            className={sent ? 'bg-gray-700 text-white' : ''}
+                          >
+                            <UserPlus className="w-4 h-4 mr-1" />
+                            {sent ? 'Requested' : received ? 'Respond' : 'Request'}
+                          </Button>
                         </div>
-                        {idx < arr.length - 1 && (
-                          <div className="w-full h-px bg-white opacity-20 my-2" />
-                        )}
-                      </>
-                    );
-                  })}
-                </div>
-              )}
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="text-center text-gray-400 py-8">No users found.</div>
+                )}
+              </div>
             </CardContent>
           </Card>
         </TabsContent>

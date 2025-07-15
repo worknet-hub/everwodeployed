@@ -23,6 +23,9 @@ interface ChatAreaProps {
   onReply: (message: Message) => void;
   onReact: (messageId: string, emoji: string) => void;
   onCancelReply: () => void;
+  onLoadOlderMessages?: () => void;
+  hasMoreMessages?: boolean;
+  isLoadingOlder?: boolean;
 }
 
 export const ChatArea = ({
@@ -37,7 +40,10 @@ export const ChatArea = ({
   onSendMessage,
   onReply,
   onReact,
-  onCancelReply
+  onCancelReply,
+  onLoadOlderMessages,
+  hasMoreMessages = false,
+  isLoadingOlder = false
 }: ChatAreaProps) => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
@@ -71,7 +77,7 @@ export const ChatArea = ({
   }
 
   return (
-    <div className="flex flex-col h-full bg-[rgba(0,0,0,0.7)]">
+    <div className="flex flex-col h-full bg-[#000000]">
       {/* Desktop back icon */}
       {!isMobile && (
         <div className="flex items-center h-16 px-4 bg-black/80 sticky top-0 z-50">
@@ -85,6 +91,7 @@ export const ChatArea = ({
             userName={selectedUser?.full_name || 'Unknown User'}
             userAvatar={selectedUser?.avatar_url || ''}
             isConnected={isConnected}
+            userId={selectedUser?.partner_id || ''}
           />
         </div>
       )}
@@ -100,6 +107,9 @@ export const ChatArea = ({
             partnerId={selectedConversation}
             onReply={onReply}
             onReact={onReact}
+            onLoadOlderMessages={onLoadOlderMessages}
+            hasMoreMessages={hasMoreMessages}
+            isLoadingOlder={isLoadingOlder}
           />
           <div ref={messagesEndRef} />
         </div>
@@ -117,7 +127,6 @@ export const ChatArea = ({
           isConnected={isConnected}
         />
         {/* Black area below message input on mobile */}
-        <div className="bg-black w-full h-6 md:hidden" />
       </div>
     </div>
   );

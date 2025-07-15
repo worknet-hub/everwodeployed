@@ -1,5 +1,5 @@
 
-const CACHE_NAME = 'camzy-v1';
+const CACHE_NAME = 'everwo-v1';
 const urlsToCache = [
   '/',
   '/static/js/bundle.js',
@@ -30,7 +30,7 @@ self.addEventListener('fetch', (event) => {
 // Push notification handling
 self.addEventListener('push', (event) => {
   const options = {
-    body: event.data ? event.data.text() : 'New notification from Camzy',
+    body: event.data ? event.data.text() : 'New notification from Everwo',
     icon: '/icon-192.png',
     badge: '/favicon.ico',
     vibrate: [100, 50, 100],
@@ -41,7 +41,7 @@ self.addEventListener('push', (event) => {
     actions: [
       {
         action: 'explore',
-        title: 'Open Camzy',
+        title: 'Open Everwo',
         icon: '/icon-192.png'
       },
       {
@@ -53,7 +53,7 @@ self.addEventListener('push', (event) => {
   };
 
   event.waitUntil(
-    self.registration.showNotification('Camzy', options)
+    self.registration.showNotification('Everwo', options)
   );
 });
 

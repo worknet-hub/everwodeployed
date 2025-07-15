@@ -22,11 +22,7 @@ interface UseJobsOptions {
 export const useJobs = ({ type = 'all', searchTerm = '', location = '' }: UseJobsOptions = {}) => {
   const [refetchTrigger, setRefetchTrigger] = useState(0);
 
-  // Set up real-time subscription
-  useRealtime({
-    table: 'jobs',
-    onUpdate: () => setRefetchTrigger(prev => prev + 1),
-  });
+  // Removed useRealtime subscription for 'jobs'
 
   const { data: jobs = [], isLoading, error, refetch } = useQuery({
     queryKey: ['jobs', type, searchTerm, location, refetchTrigger],

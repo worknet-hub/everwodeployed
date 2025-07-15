@@ -6,6 +6,7 @@ import { Hash, Users, TrendingUp } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useRealtime } from '@/hooks/useRealtime';
 import { useNavigate } from 'react-router-dom';
+import { useRealtimeCommunities } from "@/contexts/RealtimeCommunitiesContext";
 
 interface Community {
   id: string;
@@ -25,63 +26,13 @@ export const RealtimeCommunitiesList = ({
   selectedCommunity, 
   onCommunitySelect 
 }: RealtimeCommunitiesListProps) => {
+  const { communities } = useRealtimeCommunities();
   const navigate = useNavigate();
-  const [communities, setCommunities] = useState<Community[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchCommunities = useCallback(async () => {
-    // Get communities with recent activity (thoughts posted in last 7 days)
-    const { data } = await supabase
-      .from('communities')
-      .select(`
-        *,
-        thoughts!inner(created_at)
-      `)
-      .gte('thoughts.created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
-      .limit(10);
-
-    if (data) {
-      // Process to get unique communities with activity count
-      const communityMap = new Map();
-      
-      data.forEach(item => {
-        if (!communityMap.has(item.id)) {
-          communityMap.set(item.id, {
-            id: item.id,
-            name: item.name,
-            description: item.description,
-            member_count: item.member_count,
-            created_at: item.created_at,
-            recent_activity_count: 1
-          });
-        } else {
-          const existing = communityMap.get(item.id);
-          existing.recent_activity_count += 1;
-        }
-      });
-
-      // Convert to array and sort by recent activity
-      const trendingCommunities = Array.from(communityMap.values())
-        .sort((a, b) => b.recent_activity_count - a.recent_activity_count);
-
-      setCommunities(trendingCommunities);
-    }
-    setLoading(false);
-  }, []);
-
-  useRealtime({
-    table: 'communities',
-    onUpdate: fetchCommunities
-  });
-
-  useRealtime({
-    table: 'thoughts',
-    onUpdate: fetchCommunities
-  });
-
   useEffect(() => {
-    fetchCommunities();
-  }, [fetchCommunities]);
+    setLoading(false);
+  }, [communities]);
 
   const handleCommunityClick = (communityName: string) => {
     if (onCommunitySelect) {
