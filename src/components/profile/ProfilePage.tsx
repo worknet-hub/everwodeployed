@@ -36,6 +36,7 @@ interface Profile {
   available: boolean;
   college: string;
   interests: string[];
+  onboarding_completed: boolean;
 }
 
 interface ProfilePageProps {
@@ -54,6 +55,9 @@ export const ProfilePage = ({ userId }: ProfilePageProps) => {
 
   // Find the profile from context
   const profile = profiles?.find((p: any) => p.id === profileId) || null;
+
+  // Check if onboarding is completed
+  const onboardingCompleted = profile?.onboarding_completed;
 
   const handleAvatarChange = (newAvatarUrl: string) => {
     // Optionally update avatar locally for instant UI feedback
@@ -106,6 +110,12 @@ export const ProfilePage = ({ userId }: ProfilePageProps) => {
               onAvatarChange={isOwnProfile ? handleAvatarChange : undefined}
               connections={connections}
             />
+            {/* Start Onboarding Button - now visible to everyone */}
+            <div className="mt-4 flex justify-end">
+              <Button onClick={() => navigate('/onboarding')} className="bg-gradient-to-r from-emerald-400 to-blue-500 text-white font-semibold px-6 py-2 rounded-xl shadow-md">
+                Start Onboarding
+              </Button>
+            </div>
           </CardContent>
         </Card>
 

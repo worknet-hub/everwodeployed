@@ -243,12 +243,12 @@ export const SearchPage = () => {
                     </Avatar>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center space-x-2">
-                        <h3 className="font-semibold truncate">@{profile.username || 'unknown-user'}</h3>
+                        <h3 className="font-semibold truncate">{profile.username || 'unknown-user'}</h3>
                         {profile.college_verified && (
                           <Verified className="w-4 h-4 text-white" />
                         )}
                       </div>
-                      <p className="text-sm text-muted-foreground">@{profile.username}</p>
+                      <p className="text-sm text-muted-foreground">{profile.username}</p>
                       <div className="flex items-center space-x-2 mt-1">
                         <Star className="w-4 h-4 text-yellow-500 fill-current" />
                         <span className="text-sm font-medium">{profile.rating}</span>

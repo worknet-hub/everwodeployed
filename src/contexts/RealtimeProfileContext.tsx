@@ -46,11 +46,11 @@ export const RealtimeProfileProvider = ({ children }: { children: ReactNode }) =
   // Real-time subscriptions (only once here)
   useRealtime({
     table: "profiles",
-    onUpdate: () => {
+    onUpdate: (event) => {
       try {
         fetchProfiles();
       } catch (err) {
-        console.error('Global error in onUpdate-profile:', err);
+        console.error('Global error in onUpdate-profile:', err, event);
       }
     },
   });
@@ -74,7 +74,7 @@ export const RealtimeProfileProvider = ({ children }: { children: ReactNode }) =
 
 export const useRealtimeProfile = () => {
   const context = useContext(RealtimeProfileContext);
-  if (!context) {
+  if (!context || typeof context !== 'object') {
     // Fallback to prevent undefined errors
     return { profiles: [], connections: [] };
   }

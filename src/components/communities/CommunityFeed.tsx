@@ -139,14 +139,14 @@ export const CommunityFeed = ({ community, onBack }: CommunityFeedProps) => {
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div className="flex items-center space-x-2">
-            <h1 className="text-lg font-semibold">@{community}</h1>
+            <h1 className="text-lg font-semibold">{community}</h1>
           </div>
         </div>
       </header>
 
       <div className="max-w-2xl mx-auto p-6">
         <div className="mb-6">
-          <h2 className="text-xl font-semibold mb-2">@{community} Community</h2>
+          <h2 className="text-xl font-semibold mb-2">{community} Community</h2>
           <p className="text-muted-foreground">
             Thoughts from {community} enthusiasts at your university
           </p>
@@ -180,7 +180,7 @@ export const CommunityFeed = ({ community, onBack }: CommunityFeedProps) => {
               <span className="block mb-4 text-muted-foreground" style={{ fontSize: '3rem', fontWeight: 600, lineHeight: 1, textAlign: 'center' }}>@</span>
               <h3 className="text-lg font-semibold mb-2">No thoughts yet</h3>
               <p className="text-muted-foreground">
-                Be the first to share a thought in the @{community} community!
+                Be the first to share a thought in the {community} community!
               </p>
             </div>
           )}

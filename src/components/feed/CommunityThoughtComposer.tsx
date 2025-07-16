@@ -124,7 +124,7 @@ export const CommunityThoughtComposer = ({ userInterests, onThoughtPosted, fixed
                 <SelectItem value="">No community tag</SelectItem>
                 {userInterests.map((interest) => (
                   <SelectItem key={interest} value={interest}>
-                    @{interest}
+                    {interest}
                   </SelectItem>
                 ))}
               </SelectContent>

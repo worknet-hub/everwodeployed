@@ -9,6 +9,24 @@ import { User, School, MapPin, Sun, Moon, CheckCircle, X } from 'lucide-react';
 import { Command, CommandInput, CommandList, CommandItem, CommandEmpty } from '@/components/ui/command';
 import { Combobox } from '@/components/ui/combobox';
 
+const MAJORS = [
+  'Biology', 'Chemistry', 'Physics', 'Mathematics', 'Statistics', 'Environmental Science', 'Geology', 'Astronomy', 'Computer Science', 'Information Technology', 'Data Science', 'Artificial Intelligence', 'Biotechnology', 'Microbiology', 'Marine Biology', 'Zoology', 'Botany', 'Biomedical Science', 'Nanotechnology', 'Mechanical Engineering', 'Electrical Engineering', 'Civil Engineering', 'Computer Engineering', 'Electronics and Communication Engineering', 'Aerospace Engineering', 'Chemical Engineering', 'Environmental Engineering', 'Mechatronics Engineering', 'Software Engineering', 'Robotics Engineering', 'Petroleum Engineering', 'Structural Engineering', 'Agricultural Engineering', 'Industrial Engineering', 'Marine Engineering', 'Metallurgical Engineering', 'Mining Engineering', 'Automotive Engineering', 'Medicine', 'Dentistry', 'Pharmacy', 'Nursing', 'Physiotherapy', 'Veterinary Science', 'Occupational Therapy', 'Public Health', 'Law', 'Business Administration', 'Economics', 'Accounting', 'Finance', 'Marketing', 'Human Resource Management', 'International Business', 'Entrepreneurship', 'Operations Management', 'Supply Chain Management', 'Architecture', 'Urban Planning', 'Interior Design', 'Graphic Design', 'Fashion Design', 'Fine Arts', 'Performing Arts', 'Music', 'Film Studies', 'Theatre', 'English Literature', 'Linguistics', 'History', 'Philosophy', 'Psychology', 'Sociology', 'Political Science', 'Anthropology', 'Education', 'Journalism', 'Mass Communication', 'Media Studies', 'Public Relations', 'Hospitality Management', 'Tourism', 'Culinary Arts', 'Criminology', 'Social Work', 'Library Science', 'Theology', 'Religious Studies', 'Gender Studies', 'Cognitive Science', 'Cultural Studies', 'Development Studies', 'International Relations', 'Sports Science', 'Event Management', 'Game Design', 'Animation', 'Agriculture', 'Forestry', 'Horticulture', 'Food Technology', 'Renewable Energy', 'Aviation', 'Defense Studies', 'Ethics', 'Logistics', 'Digital Media', 'Actuarial Science'
+];
+
+const COLLEGES = [
+  'GITAM-HYD',
+  'MAHINDRA-HYD',
+  'WOXSEN-HYD',
+  'CHRIST',
+  'SNIST',
+  'KLU-HYD',
+  'MANIPAL-BLR',
+  'MANIPAL',
+  'AMITY-DEL',
+  'AMITY-HYD',
+  'LPU-PUJ',
+];
+
 interface PersonalizeScreenProps {
   data: {
     college_name: string;
@@ -22,9 +40,10 @@ interface PersonalizeScreenProps {
   onComplete: () => void;
   onPrevious: () => void;
   isCompleting: boolean;
+  locked?: boolean;
 }
 
-export const PersonalizeScreen = ({ data, onUpdate, onComplete, onPrevious, isCompleting }: PersonalizeScreenProps) => {
+export const PersonalizeScreen = ({ data, onUpdate, onComplete, onPrevious, isCompleting, locked }: PersonalizeScreenProps) => {
   const [formData, setFormData] = useState(data);
 
   const handleInputChange = (field: string, value: string) => {
@@ -42,35 +61,8 @@ export const PersonalizeScreen = ({ data, onUpdate, onComplete, onPrevious, isCo
 
   const isFormValid = formData.college_name && formData.major && formData.year_of_study;
 
-  const MAJORS = [
-    'Accounting', 'Actuarial Science', 'Advertising', 'Agriculture', 'Animal Science', 'Anthropology',
-    'Applied Mathematics', 'Architecture', 'Artificial Intelligence', 'Astronomy', 'Astrophysics', 'Aviation',
-    'Banking & Finance', 'Biochemistry', 'Bioengineering', 'Bioinformatics', 'Biology', 'Biomedical Engineering',
-    'Biotechnology', 'Botany', 'Business Administration', 'Chemical Engineering', 'Chemistry', 'Civil Engineering',
-    'Cognitive Science', 'Commerce', 'Communication', 'Comparative Literature', 'Computer Engineering',
-    'Computer Science', 'Construction Management', 'Criminal Justice', 'Culinary Arts', 'Cybersecurity',
-    'Data Analytics', 'Data Science', 'Dentistry', 'Design (Graphic, Product, Industrial)', 'Development Studies',
-    'Dietetics / Nutrition', 'Digital Marketing', 'Economics', 'Education', 'Electrical Engineering',
-    'Electronics and Communication Engineering', 'Energy Engineering', 'English Literature', 'Entrepreneurship',
-    'Environmental Engineering', 'Environmental Science', 'Fashion Design', 'Film & Media Studies', 'Finance',
-    'Fine Arts', 'Food Technology', 'Forensic Science', 'Game Design', 'Genetics', 'Geography',
-    'Geology / Earth Sciences', 'History', 'Hospitality Management', 'Human Resource Management',
-    'Industrial Design', 'Industrial Engineering', 'Information Systems', 'Information Technology',
-    'Innovation Management', 'Interior Design', 'International Business', 'International Relations',
-    'Islamic Studies', 'Journalism', 'Landscape Architecture', 'Languages (e.g., Spanish, French, Chinese)',
-    'Law', 'Library Science', 'Linguistics', 'Logistics & Supply Chain', 'Machine Learning', 'Marine Biology',
-    'Marketing', 'Mass Communication', 'Materials Science', 'Mathematics', 'Mechanical Engineering',
-    'Mechatronics', 'Media Studies', 'Medical Laboratory Science', 'Medicine (MBBS)', 'Microbiology',
-    'Mining Engineering', 'Music', 'Nanotechnology', 'Neurology', 'Nursing', 'Nutrition Science',
-    'Oceanography', 'Optometry', 'Petroleum Engineering', 'Pharmacy', 'Philosophy', 'Photography',
-    'Physical Education', 'Physics', 'Physiotherapy', 'Planetary Science', 'Political Science', 'Pre-Law',
-    'Pre-Med', 'Product Design', 'Psychology', 'Public Administration', 'Public Health', 'Public Policy',
-    'Radiology', 'Real Estate', 'Religious Studies', 'Renewable Energy', 'Robotics', 'Rural Development',
-    'Social Work', 'Sociology', 'Software Engineering', 'Sports Management', 'Statistics',
-    'Supply Chain Management', 'Sustainability Studies', 'Teaching / B.Ed', 'Textile Engineering',
-    'Theatre / Performing Arts', 'Theology', 'Tourism & Travel', 'Urban Planning', 'Veterinary Science',
-    'Visual Arts', 'Web Development', 'Zoology'
-  ];
+  // Remove the lock logic for major selection in onboarding
+  // const majorLocked = Boolean(data.major); // <-- remove or comment out
 
   return (
     <div className="min-h-screen bg-gray-950 flex items-center justify-center p-6">
@@ -87,25 +79,6 @@ export const PersonalizeScreen = ({ data, onUpdate, onComplete, onPrevious, isCo
         </div>
 
         {/* Theme toggle */}
-        <div className="p-4 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              {formData.theme === 'dark' ? (
-                <Moon className="w-5 h-5 text-white" />
-              ) : (
-                <Sun className="w-5 h-5 text-yellow-400" />
-              )}
-              <div>
-                <p className="text-white font-medium">Dark Mode</p>
-                <p className="text-gray-400 text-sm">Choose your preferred theme</p>
-              </div>
-            </div>
-            <Switch
-              checked={formData.theme === 'dark'}
-              onCheckedChange={handleThemeToggle}
-            />
-          </div>
-        </div>
 
         {/* Form */}
         <div className="space-y-4">
@@ -114,21 +87,33 @@ export const PersonalizeScreen = ({ data, onUpdate, onComplete, onPrevious, isCo
               <School className="w-4 h-4" />
               <span>College/University *</span>
             </Label>
-            <Input
-              id="college_name"
+            <Select
               value={formData.college_name}
-              onChange={(e) => handleInputChange('college_name', e.target.value)}
-              placeholder="e.g., Harvard University"
-              className="h-12 bg-white/10 border-white/20 text-white placeholder-gray-400 rounded-xl"
-            />
+              onValueChange={(value) => handleInputChange('college_name', value)}
+              disabled={locked}
+            >
+              <SelectTrigger className="h-12 bg-white/10 border-white/20 text-white rounded-xl">
+                <SelectValue placeholder="Select your college" />
+              </SelectTrigger>
+              <SelectContent className="bg-gray-900 border-gray-700 max-h-60 overflow-y-auto">
+                {COLLEGES.map((college) => (
+                  <SelectItem key={college} value={college}>{college}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {locked && !!data.college_name && (
+              <div className="text-green-400 text-xs mt-1">College selection is locked after submission.</div>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="major" className="text-gray-300">Major *</Label>
               <div className="relative">
-                {/* Improved Combobox for major selection */}
-                <MajorCombobox value={formData.major} onChange={major => handleInputChange('major', major)} />
+                <MajorCombobox value={formData.major} onChange={major => handleInputChange('major', major)} disabled={locked} />
+                {locked && !!data.major && (
+                  <div className="text-green-400 text-xs mt-1">Major selection is locked after submission.</div>
+                )}
               </div>
             </div>
 
@@ -210,7 +195,7 @@ export const PersonalizeScreen = ({ data, onUpdate, onComplete, onPrevious, isCo
   );
 };
 
-function MajorCombobox({ value, onChange }: { value: string, onChange: (major: string) => void }) {
+function MajorCombobox({ value, onChange, disabled }: { value: string, onChange: (major: string) => void, disabled?: boolean }) {
   const [search, setSearch] = useState('');
   const [isFocused, setIsFocused] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -221,7 +206,7 @@ function MajorCombobox({ value, onChange }: { value: string, onChange: (major: s
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value);
-    if (value) onChange('');
+    // Do not clear the value automatically
   };
 
   const handleSelect = (major: string) => {
@@ -240,7 +225,11 @@ function MajorCombobox({ value, onChange }: { value: string, onChange: (major: s
 
   return (
     <div>
-      {value ? (
+      {value && !disabled ? (
+        <span className="inline-flex items-center bg-white/10 text-white rounded-full px-3 py-1 text-sm cursor-pointer select-none" onClick={handleClear}>
+          {value} <span className="ml-2 text-xs">(change)</span>
+        </span>
+      ) : value && disabled ? (
         <span className="inline-flex items-center bg-white/10 text-white rounded-full px-3 py-1 text-sm cursor-not-allowed select-none">
           {value}
         </span>
@@ -256,8 +245,9 @@ function MajorCombobox({ value, onChange }: { value: string, onChange: (major: s
             placeholder="Search and select your major..."
             className="h-12 w-full bg-white/10 border-white/20 text-white placeholder-gray-400 rounded-xl px-3"
             autoComplete="off"
+            disabled={disabled}
           />
-          {showDropdown && (
+          {showDropdown && !disabled && (
             <div className="absolute z-10 w-full bg-white border border-gray-200 rounded-xl mt-1 max-h-60 overflow-y-auto shadow-lg">
               {filtered.map(major => (
                 <div

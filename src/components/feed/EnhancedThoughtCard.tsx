@@ -14,6 +14,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useSavedThoughts } from '@/hooks/useSavedThoughts';
 import dayjs from 'dayjs';
 import advancedFormat from 'dayjs/plugin/advancedFormat';
+import { v4 as uuidv4 } from 'uuid';
+import { useRealtimeLikes } from '@/hooks/useRealtimeLikes';
 dayjs.extend(advancedFormat);
 // Removed: import { useRealtime } from '@/hooks/useRealtime';
 
@@ -167,6 +169,7 @@ export const EnhancedThoughtCard = ({
 
   // Defensive fallback for author
   const safeAuthor = author || { name: 'Anonymous', avatar: '', college: '', verified: false, username: '' };
+  const userCollege = user?.user_metadata?.college_name || user?.user_metadata?.college || user?.college_name || user?.college || '';
 
   const [replyContent, setReplyContent] = useState("");
   const [isReplying, setIsReplying] = useState(false);
@@ -174,6 +177,7 @@ export const EnhancedThoughtCard = ({
   const [showReasonBox, setShowReasonBox] = useState(false);
   const [reportReason, setReportReason] = useState('');
   const reportDropdownRef = React.useRef<HTMLDivElement>(null);
+  const [optimisticReplies, setOptimisticReplies] = useState<any[]>([]);
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -219,6 +223,55 @@ export const EnhancedThoughtCard = ({
     }
   };
 
+  const handleOptimisticReply = async () => {
+    if (!replyContent.trim() || !user) return;
+    // Create a temporary optimistic reply
+    const tempReply = {
+      id: uuidv4(),
+      content: replyContent,
+      user_id: user.id,
+      user: {
+        name: user.user_metadata?.full_name || user.email || 'You',
+        avatar: user.user_metadata?.avatar_url || '',
+      },
+      created_at: new Date().toISOString(),
+      likes_count: 0,
+      comments_count: 0,
+      parent_id: id,
+      isOptimistic: true,
+    };
+    setOptimisticReplies(prev => [...prev, tempReply]);
+    setReplyContent("");
+    setIsReplying(false);
+    // Post to backend
+    try {
+      await supabase.from('thoughts').insert({
+        content: tempReply.content,
+        user_id: tempReply.user_id,
+        parent_id: id,
+        // Add other fields as needed
+      });
+      // Real-time will update the UI and remove the optimistic reply
+    } catch (error) {
+      toast.error('Failed to post reply');
+      // Remove the optimistic reply on error
+      setOptimisticReplies(prev => prev.filter(r => r.id !== tempReply.id));
+    }
+    // onReplyPosted will be called by real-time update
+  };
+  // Remove optimistic replies that now exist in real replies
+  useEffect(() => {
+    setOptimisticReplies(prev => prev.filter(opt => !replies.some(r => r.content === opt.content && r.user_id === opt.user_id)));
+  }, [replies]);
+
+  // Merge optimisticReplies with real replies, filtering out duplicates by a unique temp id or content+user
+  const mergedReplies = [
+    ...optimisticReplies.filter(opt => !replies.some(r => r.content === opt.content && r.user_id === opt.user_id)),
+    ...(replies || [])
+  ];
+
+  const { likes: realtimeLikes, toggleLike } = useRealtimeLikes([id]);
+
   return (
     <Card className="glass-card hover:shadow-lg transition-shadow relative">
       {/* Bookmark icon top right */}
@@ -250,7 +303,9 @@ export const EnhancedThoughtCard = ({
                   <div className="flex items-center space-x-2 flex-shrink-0">
                     <span className="font-semibold text-foreground text-sm md:text-base cursor-pointer" onClick={() => navigate(`/profile/${safeAuthor.id}`)}>{safeAuthor.username}</span>
                     {safeAuthor.college && (
-                      <span className="ml-2 px-2 py-0.5 rounded-full bg-blue-500/60 text-white text-xs font-medium shadow-sm" style={{backdropFilter: 'blur(2px)'}}>
+                      <span
+                        className={`ml-2 px-2 py-0.5 rounded-full text-white text-xs font-medium shadow-sm ${userCollege && safeAuthor.college && userCollege.toLowerCase() === safeAuthor.college.toLowerCase() ? 'bg-green-600' : 'bg-blue-500/60'}`}
+                        style={{backdropFilter: 'blur(2px)'}}>
                         {safeAuthor.college}
                       </span>
                     )}
@@ -401,11 +456,11 @@ export const EnhancedThoughtCard = ({
                   <Button 
                     variant="ghost" 
                     size="sm" 
-                    className={`flex items-center space-x-2 ${isLiked ? 'text-red-500' : ''}`}
-                    onClick={handleLikeWithNotification}
+                    className={`flex items-center space-x-2 ${realtimeLikes[id]?.isLiked ? 'text-red-500' : ''}`}
+                    onClick={() => toggleLike(id)}
                   >
-                    <Heart className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} />
-                    <span>{likes}</span>
+                    <Heart className={`w-4 h-4 ${realtimeLikes[id]?.isLiked ? 'fill-current' : ''}`} />
+                    <span>{realtimeLikes[id]?.count ?? likes}</span>
                   </Button>
 
                   <Button 
@@ -415,7 +470,7 @@ export const EnhancedThoughtCard = ({
                     onClick={() => setIsReplying((v) => !v)}
                   >
                     <MessageCircle className="w-4 h-4" />
-                    <span>{comments}</span>
+                    <span>{replies?.length ?? 0}</span>
                   </Button>
                 </div>
 
@@ -434,13 +489,7 @@ export const EnhancedThoughtCard = ({
                         />
                         <button
                           className={`flex items-center justify-center p-0 w-10 h-10 rounded-full transition-colors ml-1 ${replyContent.trim() ? 'bg-emerald-500 hover:bg-emerald-600 text-white' : 'bg-gray-700 text-gray-400'}`}
-                          onClick={() => {
-                            if (replyContent.trim()) {
-                              /* handle reply post logic here */ setIsReplying(false); setReplyContent(""); handleReplyPosted();
-                            } else {
-                              setIsReplying(false); setReplyContent("");
-                            }
-                          }}
+                          onClick={handleOptimisticReply}
                           aria-label={replyContent.trim() ? "Post reply" : "Cancel reply"}
                           type="button"
                           style={{ minWidth: '40px', minHeight: '40px' }}
@@ -452,9 +501,9 @@ export const EnhancedThoughtCard = ({
                       </div>
                     </div>
                     {/* Always show replies under the post when isReplying is true */}
-                    {replies.length > 0 && (
+                    {mergedReplies.length > 0 && (
                       <div className="mt-4 space-y-4 border-l-2 border-muted pl-4 md:border-l-2 md:pl-4 bg-background/80 rounded-lg p-2 md:bg-transparent md:rounded-none md:p-0 overflow-x-auto">
-                        {replies.map((reply) => (
+                        {mergedReplies.map((reply) => (
                           <div key={reply.id}>
                             <div className="block md:hidden border border-white/10 rounded-lg bg-background/90 p-3">
                               <div className="flex items-center space-x-2 mb-1">
@@ -565,7 +614,9 @@ export const EnhancedThoughtCard = ({
                   <div className="flex items-center space-x-2">
                     <h4 className="font-semibold text-foreground text-sm md:text-base">Anonymous</h4>
                     {safeAuthor.college && (
-                      <span className="ml-2 px-2 py-0.5 rounded-full bg-blue-500/60 text-white text-xs font-medium shadow-sm" style={{backdropFilter: 'blur(2px)'}}>
+                      <span
+                        className={`ml-2 px-2 py-0.5 rounded-full text-white text-xs font-medium shadow-sm ${userCollege && safeAuthor.college && userCollege.toLowerCase() === safeAuthor.college.toLowerCase() ? 'bg-green-600' : 'bg-blue-500/60'}`}
+                        style={{backdropFilter: 'blur(2px)'}}>
                         {safeAuthor.college}
                       </span>
                     )}
@@ -697,7 +748,7 @@ export const EnhancedThoughtCard = ({
                     onClick={() => setShowReplyComposer(!showReplyComposer)}
                   >
                     <MessageCircle className="w-4 h-4" />
-                    <span>{comments}</span>
+                    <span>{replies?.length ?? 0}</span>
                   </Button>
                 </div>
 

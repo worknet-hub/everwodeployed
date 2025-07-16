@@ -577,7 +577,7 @@ export const ConnectionsView = () => {
                           </Avatar>
                           {/* Username centered and clickable */}
                           <div className="font-bold text-white text-xl text-center mb-1 cursor-pointer" onClick={() => navigate(`/profile/${profile.id}`)}>
-                            @{profile.username || profile.full_name}
+                            {profile.username || profile.full_name}
                           </div>
                           {/* Interests label */}
                           <div className="text-gray-300 text-sm font-semibold mb-1">Interests:</div>

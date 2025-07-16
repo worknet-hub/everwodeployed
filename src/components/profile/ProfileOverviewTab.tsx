@@ -33,6 +33,8 @@ export const ProfileOverviewTab = ({ profile, isOwnProfile }: ProfileOverviewTab
     major: profile?.major || '',
   });
 
+  const majorLocked = Boolean(profile?.major);
+
   useEffect(() => {
     setUserInterests(profile?.interests || []);
     setSkills(profile?.skills || []);
@@ -178,8 +180,12 @@ export const ProfileOverviewTab = ({ profile, isOwnProfile }: ProfileOverviewTab
                     onChange={(e) => handleFieldChange('major', e.target.value)}
                     placeholder="Major"
                     className="flex-1 profile-input"
+                    disabled={majorLocked}
                   />
                 </div>
+                {majorLocked && (
+                  <div className="text-xs text-red-400 mb-1 ml-8">Your major is locked and cannot be changed.</div>
+                )}
               </>
             ) : (
               <>
@@ -217,7 +223,7 @@ export const ProfileOverviewTab = ({ profile, isOwnProfile }: ProfileOverviewTab
               {userInterests?.length > 0 ? (
                 userInterests.map((interest: string) => (
                   <Badge key={interest} className="bg-blue-600/80 text-white border-none shadow-md px-3 py-1 text-base font-semibold">
-                    @{interest}
+                    {interest}
                   </Badge>
                 ))
               ) : (

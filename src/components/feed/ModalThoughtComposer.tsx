@@ -215,27 +215,30 @@ export const ModalThoughtComposer = ({
               </select>
             </div>
 
-            <MentionInput
-              value={content}
-              onChange={handleContentChange}
-              placeholder={placeholder}
-              className="min-h-[120px] resize-none w-full p-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white/5 text-white placeholder-gray-400"
-            />
+            <div className="relative">
+              <MentionInput
+                value={content}
+                onChange={handleContentChange}
+                placeholder={placeholder}
+                className="min-h-[120px] resize-none w-full p-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white/5 text-white placeholder-gray-400 pr-14" // Add right padding for button
+              />
+              {/* Circular media button inside the typing box at the right bottom */}
+              <button
+                type="button"
+                className="absolute bottom-3 right-3 w-10 h-10 flex items-center justify-center rounded-full bg-black/60 hover:bg-black/80 transition-colors border border-white/10 shadow-lg focus:outline-none"
+                title="Add media"
+                style={{ zIndex: 10 }}
+              >
+                <GalleryIcon className="w-6 h-6 text-gray-300" />
+              </button>
+            </div>
 
-            <div className="flex items-center">
+            <div className="flex items-center mt-2">
               <span className="text-xs text-gray-400 flex-1">
                 {content.length}/500 characters
                 {mentions.length > 0 && ` • ${mentions.length > 1 ? 's' : ''}`}
               </span>
               <div className="flex gap-2 items-center">
-                {/* Gallery icon button for both mobile and desktop, no box, right-aligned */}
-                <button
-                  type="button"
-                  className="flex items-center justify-center p-0 bg-transparent border-none shadow-none hover:bg-transparent focus:outline-none ml-2"
-                  title="Add media"
-                >
-                  <GalleryIcon className="w-6 h-6 text-gray-400" />
-                </button>
                 <Button 
                   variant="outline"
                   onClick={handleClose}

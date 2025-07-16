@@ -9,6 +9,9 @@ import { PersonalizeScreen } from './screens/PersonalizeScreen';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { X } from 'lucide-react';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { Button } from '@/components/ui/button';
 
 export const OnboardingContainer = () => {
   const { user, loading } = useAuth();
@@ -27,6 +30,8 @@ export const OnboardingContainer = () => {
   });
 
   const totalSteps = 4;
+  const isMobile = useIsMobile();
+  const [showPWADialog, setShowPWADialog] = useState(false);
 
   useEffect(() => {
     if (loading) return;
@@ -62,6 +67,17 @@ export const OnboardingContainer = () => {
     };
     checkProfile();
   }, [user, loading, navigate]);
+
+  useEffect(() => {
+    if (isMobile && !localStorage.getItem('pwaDialogDismissed')) {
+      setShowPWADialog(true);
+    }
+  }, [isMobile]);
+
+  const handleDismissPWADialog = () => {
+    setShowPWADialog(false);
+    localStorage.setItem('pwaDialogDismissed', '1');
+  };
 
   const handleNext = () => {
     if (currentStep < totalSteps - 1) {
@@ -144,6 +160,7 @@ export const OnboardingContainer = () => {
       onPrevious={() => {}} // No back button on first step
       onSkip={handleSkip}
       isCompleting={isCompleting}
+      locked={currentStep > 0}
     />,
     <BuildConnectionsScreen key="connections" onNext={handleNext} onPrevious={handlePrevious} />,
     <PostThoughtsScreen key="thoughts" onNext={handleNext} onPrevious={handlePrevious} />,
@@ -161,6 +178,39 @@ export const OnboardingContainer = () => {
 
   return (
     <div className="min-h-screen bg-gray-950 overflow-hidden">
+      {/* PWA Recommendation Dialog */}
+      <Dialog open={showPWADialog} onOpenChange={setShowPWADialog}>
+        <DialogContent className="max-w-lg w-full p-0 overflow-hidden">
+          <div className="relative max-h-[80vh] overflow-y-auto p-6">
+            <button
+              className="absolute top-4 right-4 z-10 text-gray-400 hover:text-gray-700"
+              onClick={handleDismissPWADialog}
+              aria-label="Close"
+            >
+              ×
+            </button>
+            <h2 className="text-xl font-bold mb-2 text-center">Prefer PWA for Best Experience</h2>
+            <p className="mb-4 text-center text-gray-500">We recommend using Everwo as a Progressive Web App (PWA) for a smoother, app-like experience on your mobile device.</p>
+            <div className="mb-6">
+              <h3 className="font-semibold mb-2">For iOS</h3>
+              <div className="flex flex-col gap-4 items-center">
+                <img src="/ios1.png" alt="iOS Step 1" className="rounded-lg border w-full max-w-xs" />
+                <img src="/ios2.png" alt="iOS Step 2" className="rounded-lg border w-full max-w-xs" />
+              </div>
+            </div>
+            <div className="mb-6">
+              <h3 className="font-semibold mb-2">For Android</h3>
+              <div className="flex flex-col gap-4 items-center">
+                <img src="/and1.jpg" alt="Android Step 1" className="rounded-lg border w-full max-w-xs" />
+                <img src="/and2.jpg" alt="Android Step 2" className="rounded-lg border w-full max-w-xs" />
+              </div>
+            </div>
+            <div className="flex justify-center mt-6">
+              <Button onClick={handleDismissPWADialog} className="w-full max-w-xs">Got it!</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
       {/* Exit (X) button */}
       <button
         onClick={() => navigate('/')}

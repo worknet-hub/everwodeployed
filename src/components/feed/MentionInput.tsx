@@ -27,6 +27,7 @@ export const MentionInput = ({ value, onChange, placeholder, className }: Mentio
   const [cursorPosition, setCursorPosition] = useState(0);
   const [mentions, setMentions] = useState<any[]>([]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const debounceTimer = useRef<NodeJS.Timeout | null>(null);
 
   const handleInputChange = async (newValue: string) => {
     const textarea = textareaRef.current;
@@ -42,11 +43,14 @@ export const MentionInput = ({ value, onChange, placeholder, className }: Mentio
     if (atMatch) {
       const query = atMatch[1];
       setMentionQuery(query);
-      
       // Show mentions immediately when @ is typed
       if (query.length >= 0) {
         setShowMentions(true);
-        await searchMentions(query);
+        // Debounce the searchMentions call
+        if (debounceTimer.current) clearTimeout(debounceTimer.current);
+        debounceTimer.current = setTimeout(() => {
+          searchMentions(query);
+        }, 250);
       }
     } else {
       setShowMentions(false);
@@ -89,14 +93,14 @@ export const MentionInput = ({ value, onChange, placeholder, className }: Mentio
       // Search for people
       const { data: profiles } = await supabase
         .from('profiles')
-        .select('id, full_name, avatar_url')
-        .ilike('full_name', `%${query}%`)
+        .select('id, username, avatar_url')
+        .ilike('username', `%${query}%`)
         .limit(3);
 
       if (profiles) {
         options.push(...profiles.map(p => ({
           id: p.id,
-          name: p.full_name || 'Anonymous',
+          name: p.username || 'anonymous',
           type: 'person' as const,
           avatar: p.avatar_url
         })));
