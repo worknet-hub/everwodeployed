@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import PullToRefresh from 'react-pull-to-refresh';
 
 const AuthPage = () => {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -88,124 +89,126 @@ const AuthPage = () => {
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#000000' }}>
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-6xl mx-auto">
-          {/* Header Section */}
-          <div className="flex flex-col items-center">
-            <img src="/logo.webp" alt="Logo" className="w-32 h-32 object-contain mb-1.5" />
-          </div>
+    <PullToRefresh onRefresh={() => window.location.reload()}>
+      <div className="min-h-screen" style={{ backgroundColor: '#000000' }}>
+        <div className="container mx-auto px-4 py-8">
+          <div className="max-w-6xl mx-auto">
+            {/* Header Section */}
+            <div className="flex flex-col items-center">
+              <img src="/logo.webp" alt="Logo" className="w-32 h-32 object-contain mb-1.5" />
+            </div>
 
-          <div className="flex min-h-[80vh] items-center justify-center">
-            <div className="max-w-md w-full">
-              <div className="bg-[rgba(0,0,0,0.7)] border rounded-3xl p-8 shadow-xl">
-                <div className="text-center mb-8">
-                  <h3 className="text-2xl font-bold text-foreground mb-2">
-                    EVERWO
-                  </h3>
-                  <p className="text-muted-foreground">
-                    {isSignUp 
-                      ? 'Start collaborating with students worldwide' 
-                      : 'Continue your journey with us'
-                    }
-                  </p>
-                </div>
-
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  {isSignUp && (
-                    <>
-                      <div className="space-y-2">
-                        <Label htmlFor="fullName" className="text-sm font-medium">Full Name</Label>
-                        <Input
-                          id="fullName"
-                          value={fullName}
-                          onChange={(e) => setFullName(e.target.value)}
-                          required
-                          className="h-11 rounded-xl"
-                          placeholder="Enter your full name"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="username" className="text-sm font-medium">Username</Label>
-                        <Input
-                          id="username"
-                          value={username}
-                          onChange={(e) => setUsername(e.target.value)}
-                          required
-                          className="h-11 rounded-xl"
-                          placeholder="Choose a username"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="college" className="text-sm font-medium">College</Label>
-                        <Input
-                          id="college"
-                          value={college}
-                          onChange={(e) => setCollege(e.target.value)}
-                          className="h-11 rounded-xl"
-                          placeholder="Your college/university"
-                        />
-                      </div>
-                    </>
-                  )}
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="email" className="text-sm font-medium">Email</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
-                      className="h-11 rounded-xl"
-                      placeholder="Enter your email"
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="password" className="text-sm font-medium">Password</Label>
-                    <Input
-                      id="password"
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                      className="h-11 rounded-xl"
-                      placeholder="Enter your password"
-                    />
-                  </div>
-
-                  <Button 
-                    type="submit" 
-                    className="w-full h-11 text-base rounded-xl font-medium" 
-                    disabled={loading}
-                  >
-                    {loading ? 'Please wait...' : isSignUp ? 'Create Account' : 'Sign In'}
-                  </Button>
-
-                  <div className="text-center space-y-4">
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      className="text-sm text-muted-foreground hover:text-foreground"
-                      onClick={() => setIsSignUp(!isSignUp)}
-                    >
+            <div className="flex min-h-[80vh] items-center justify-center">
+              <div className="max-w-md w-full">
+                <div className="bg-[rgba(0,0,0,0.7)] border rounded-3xl p-8 shadow-xl">
+                  <div className="text-center mb-8">
+                    <h3 className="text-2xl font-bold text-foreground mb-2">
+                      EVERWO
+                    </h3>
+                    <p className="text-muted-foreground">
                       {isSignUp 
-                        ? 'Already have an account? Sign in' 
-                        : "Don't have an account? Sign up"
+                        ? 'Start collaborating with students worldwide' 
+                        : 'Continue your journey with us'
                       }
-                    </Button>
-                    
-                    {/* Alumni Portal Section - Made more prominent */}
-                    {/* Removed Alumni Portal section */}
+                    </p>
                   </div>
-                </form>
+
+                  <form onSubmit={handleSubmit} className="space-y-6">
+                    {isSignUp && (
+                      <>
+                        <div className="space-y-2">
+                          <Label htmlFor="fullName" className="text-sm font-medium">Full Name</Label>
+                          <Input
+                            id="fullName"
+                            value={fullName}
+                            onChange={(e) => setFullName(e.target.value)}
+                            required
+                            className="h-11 rounded-xl"
+                            placeholder="Enter your full name"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="username" className="text-sm font-medium">Username</Label>
+                          <Input
+                            id="username"
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
+                            required
+                            className="h-11 rounded-xl"
+                            placeholder="Choose a username"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="college" className="text-sm font-medium">College</Label>
+                          <Input
+                            id="college"
+                            value={college}
+                            onChange={(e) => setCollege(e.target.value)}
+                            className="h-11 rounded-xl"
+                            placeholder="Your college/university"
+                          />
+                        </div>
+                      </>
+                    )}
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="email" className="text-sm font-medium">Email</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                        className="h-11 rounded-xl"
+                        placeholder="Enter your email"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="password" className="text-sm font-medium">Password</Label>
+                      <Input
+                        id="password"
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                        className="h-11 rounded-xl"
+                        placeholder="Enter your password"
+                      />
+                    </div>
+
+                    <Button 
+                      type="submit" 
+                      className="w-full h-11 text-base rounded-xl font-medium" 
+                      disabled={loading}
+                    >
+                      {loading ? 'Please wait...' : isSignUp ? 'Create Account' : 'Sign In'}
+                    </Button>
+
+                    <div className="text-center space-y-4">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        className="text-sm text-muted-foreground hover:text-foreground"
+                        onClick={() => setIsSignUp(!isSignUp)}
+                      >
+                        {isSignUp 
+                          ? 'Already have an account? Sign in' 
+                          : "Don't have an account? Sign up"
+                        }
+                      </Button>
+                      
+                      {/* Alumni Portal Section - Made more prominent */}
+                      {/* Removed Alumni Portal section */}
+                    </div>
+                  </form>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </PullToRefresh>
   );
 };
 

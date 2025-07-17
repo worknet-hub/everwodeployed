@@ -1,11 +1,14 @@
 
 import { SearchPage as SearchPageComponent } from '@/components/search/SearchPage';
+import PullToRefresh from 'react-pull-to-refresh';
 
 const SearchPage = () => {
   return (
-    <div data-tour="search">
-      <SearchPageComponent />
-    </div>
+    <PullToRefresh onRefresh={() => window.location.reload()}>
+      <div className="min-h-screen bg-[#000000]">
+        <SearchPageComponent />
+      </div>
+    </PullToRefresh>
   );
 };
 

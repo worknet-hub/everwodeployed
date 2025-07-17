@@ -75,6 +75,32 @@ function RequireOnboarding({ children }: { children: React.ReactNode }) {
     if (!loading) checkOnboarding();
   }, [user, loading]);
 
+  // Add this effect to handle justOnboarded state
+  useEffect(() => {
+    if (location.state?.justOnboarded) {
+      // Refetch onboarding status
+      setChecking(true);
+      const refetch = async () => {
+        try {
+          const { data: profile, error } = await supabase
+            .from('profiles')
+            .select('onboarding_completed')
+            .eq('id', user.id)
+            .single();
+          if (error) throw error;
+          setOnboardingCompleted(profile?.onboarding_completed ?? false);
+        } catch (err) {
+          setOnboardingCompleted(false);
+        } finally {
+          setChecking(false);
+          // Clear the state so it doesn't refetch every time
+          navigate(location.pathname, { replace: true, state: {} });
+        }
+      };
+      refetch();
+    }
+  }, [location.state, user, navigate, location.pathname]);
+
   useEffect(() => {
     if (checking) return;
     if (!user) return;

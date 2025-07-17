@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import PullToRefresh from 'react-pull-to-refresh';
 
 const questions = [
   'How easy is it to navigate the website?',
@@ -96,83 +97,85 @@ const ReviewsPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-100/60 via-purple-100/60 to-pink-100/60 dark:from-[#18181b] dark:via-[#23232b] dark:to-[#18181b] fade-in">
-      <div className="max-w-xl w-full relative p-8 bg-white/90 dark:bg-[#18181b]/90 rounded-2xl shadow-2xl fade-in">
-        <button
-          onClick={handleClose}
-          className="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors z-10"
-          aria-label="Close"
-        >
-          <X className="w-5 h-5 text-gray-700 dark:text-gray-300" />
-        </button>
-        {/* <img src={avatarUrl} alt="Logo" className="mx-auto mb-4 rounded-full w-16 h-16 shadow-lg" /> */}
-        <h1 className="text-3xl font-bold mb-2 text-center">Website Review</h1>
-        <p className="text-gray-600 dark:text-gray-300 mb-6 text-center">We value your feedback! Please rate your experience below.</p>
-        <form onSubmit={handleSubmit}>
-          {/* Step/Progress Indicator */}
-          <div className="flex items-center justify-center gap-2 mb-6">
-            {questions.map((_, idx) => (
-              <div
-                key={idx}
-                className={`h-2 w-8 rounded-full transition-all duration-300 ${
-                  idx === step ? 'bg-indigo-500 dark:bg-indigo-400 scale-110' : 'bg-gray-300 dark:bg-gray-700'
-                }`}
-              />
-            ))}
-          </div>
-          {/* Question Stepper */}
-          <div className="mb-8">
-            <label className="block mb-2 font-medium text-gray-900 dark:text-gray-100 text-lg text-center">
-              {questions[step]}
-            </label>
-            <div className="flex items-center justify-center space-x-2 mt-2">
-              {[1,2,3,4,5].map(star => (
-                <button
-                  type="button"
-                  key={star}
-                  onClick={() => handleStarClick(star)}
-                  className={`text-4xl focus:outline-none transition-transform duration-150 ${ratings[step] >= star ? 'text-yellow-400 scale-125' : 'text-gray-300 dark:text-gray-700 hover:scale-110'}`}
-                  aria-label={`Rate ${star} stars`}
-                >
-                  ★
-                </button>
+    <PullToRefresh onRefresh={() => window.location.reload()}>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-100/60 via-purple-100/60 to-pink-100/60 dark:from-[#18181b] dark:via-[#23232b] dark:to-[#18181b] fade-in">
+        <div className="max-w-xl w-full relative p-8 bg-white/90 dark:bg-[#18181b]/90 rounded-2xl shadow-2xl fade-in">
+          <button
+            onClick={handleClose}
+            className="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors z-10"
+            aria-label="Close"
+          >
+            <X className="w-5 h-5 text-gray-700 dark:text-gray-300" />
+          </button>
+          {/* <img src={avatarUrl} alt="Logo" className="mx-auto mb-4 rounded-full w-16 h-16 shadow-lg" /> */}
+          <h1 className="text-3xl font-bold mb-2 text-center">Website Review</h1>
+          <p className="text-gray-600 dark:text-gray-300 mb-6 text-center">We value your feedback! Please rate your experience below.</p>
+          <form onSubmit={handleSubmit}>
+            {/* Step/Progress Indicator */}
+            <div className="flex items-center justify-center gap-2 mb-6">
+              {questions.map((_, idx) => (
+                <div
+                  key={idx}
+                  className={`h-2 w-8 rounded-full transition-all duration-300 ${
+                    idx === step ? 'bg-indigo-500 dark:bg-indigo-400 scale-110' : 'bg-gray-300 dark:bg-gray-700'
+                  }`}
+                />
               ))}
             </div>
-            <div className="flex justify-between mt-4">
-              <Button type="button" variant="ghost" onClick={handlePrev} disabled={step === 0} className="text-gray-500 dark:text-gray-300 disabled:opacity-50">Previous</Button>
-              {step < questions.length - 1 && (
-                <Button type="button" variant="secondary" onClick={() => setStep(step + 1)} disabled={ratings[step] === 0}>
-                  Next
-                </Button>
-              )}
-            </div>
-          </div>
-          {/* Feedback and Submit only on last step */}
-          {step === questions.length - 1 && (
-            <>
-              <div className="mb-6">
-                <label className="block mb-2 font-medium text-gray-900 dark:text-gray-100">Additional Feedback</label>
-                <textarea
-                  className="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 dark:bg-[#23232b] dark:text-gray-100 transition-shadow"
-                  rows={4}
-                  value={feedback}
-                  onChange={e => setFeedback(e.target.value)}
-                  placeholder="Let us know your thoughts..."
-                />
+            {/* Question Stepper */}
+            <div className="mb-8">
+              <label className="block mb-2 font-medium text-gray-900 dark:text-gray-100 text-lg text-center">
+                {questions[step]}
+              </label>
+              <div className="flex items-center justify-center space-x-2 mt-2">
+                {[1,2,3,4,5].map(star => (
+                  <button
+                    type="button"
+                    key={star}
+                    onClick={() => handleStarClick(star)}
+                    className={`text-4xl focus:outline-none transition-transform duration-150 ${ratings[step] >= star ? 'text-yellow-400 scale-125' : 'text-gray-300 dark:text-gray-700 hover:scale-110'}`}
+                    aria-label={`Rate ${star} stars`}
+                  >
+                    ★
+                  </button>
+                ))}
               </div>
-              <Button type="submit" className="w-full py-3 text-lg font-semibold" disabled={loading || ratings.some(r => r === 0)}>
-                {loading ? 'Submitting...' : 'Submit Review'}
-              </Button>
-              {error && <div className="mt-2 text-red-500 text-center">{error}</div>}
-            </>
-          )}
-        </form>
+              <div className="flex justify-between mt-4">
+                <Button type="button" variant="ghost" onClick={handlePrev} disabled={step === 0} className="text-gray-500 dark:text-gray-300 disabled:opacity-50">Previous</Button>
+                {step < questions.length - 1 && (
+                  <Button type="button" variant="secondary" onClick={() => setStep(step + 1)} disabled={ratings[step] === 0}>
+                    Next
+                  </Button>
+                )}
+              </div>
+            </div>
+            {/* Feedback and Submit only on last step */}
+            {step === questions.length - 1 && (
+              <>
+                <div className="mb-6">
+                  <label className="block mb-2 font-medium text-gray-900 dark:text-gray-100">Additional Feedback</label>
+                  <textarea
+                    className="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 dark:bg-[#23232b] dark:text-gray-100 transition-shadow"
+                    rows={4}
+                    value={feedback}
+                    onChange={e => setFeedback(e.target.value)}
+                    placeholder="Let us know your thoughts..."
+                  />
+                </div>
+                <Button type="submit" className="w-full py-3 text-lg font-semibold" disabled={loading || ratings.some(r => r === 0)}>
+                  {loading ? 'Submitting...' : 'Submit Review'}
+                </Button>
+                {error && <div className="mt-2 text-red-500 text-center">{error}</div>}
+              </>
+            )}
+          </form>
+        </div>
       </div>
       <style>{`
         .fade-in { animation: fadeIn 0.7s; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(30px);} to { opacity: 1; transform: none; } }
       `}</style>
-    </div>
+    </PullToRefresh>
   );
 };
 
