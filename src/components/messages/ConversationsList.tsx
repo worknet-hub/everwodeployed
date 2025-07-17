@@ -63,7 +63,7 @@ export const ConversationsList = ({
                 <p className="text-sm text-muted-foreground truncate">{conversation.last_message_content}</p>
               </div>
               <div className="text-xs text-muted-foreground">
-                {formatDistanceToNow(new Date(conversation.last_message_created_at), { addSuffix: true })}
+                {formatDistanceToNow(new Date(conversation.last_message_created_at), { addSuffix: true }).replace(/^about /, '')}
               </div>
             </div>
           </div>

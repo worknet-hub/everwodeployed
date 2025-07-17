@@ -17,7 +17,6 @@ import { useNavigate } from 'react-router-dom';
 import { Plus, ChevronDown } from 'lucide-react';
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogAction } from '@/components/ui/alert-dialog';
 import { supabase } from '@/integrations/supabase/client';
-import PullToRefresh from 'react-pull-to-refresh';
 
 const Index = () => {
   const { user, signIn, signUp, loading: authLoading } = useAuth();
@@ -287,149 +286,147 @@ const Index = () => {
   return (
     <>
       <Header />
-      <PullToRefresh onRefresh={() => window.location.reload()}>
-        <div className="min-h-screen bg-[#000000] mobile-content">
-          <div className="container mx-auto px-2 py-2 max-w-7xl">
-            {selectedCommunity && (
-              <div className="mb-6 flex items-center justify-between mobile-card card-dark p-4">
-                <div className="flex items-center space-x-2">
-                  <span className="text-white text-lg font-semibold">Showing thoughts from:</span>
-                  <span className="text-white text-lg font-bold">#{selectedCommunity}</span>
-                </div>
+      <div className="min-h-screen bg-[#000000] mobile-content">
+        <div className="container mx-auto px-2 py-2 max-w-7xl">
+          {selectedCommunity && (
+            <div className="mb-6 flex items-center justify-between mobile-card card-dark p-4">
+              <div className="flex items-center space-x-2">
+                <span className="text-white text-lg font-semibold">Showing thoughts from:</span>
+                <span className="text-white text-lg font-bold">#{selectedCommunity}</span>
+              </div>
+              <button
+                onClick={() => handleCommunitySelect('')}
+                className="text-gray-400 hover:text-white transition-colors text-sm"
+              >
+                Clear filter
+              </button>
+            </div>
+          )}
+
+          {/* Thoughts Section Heading and Divider */}
+          <div className="w-full max-w-3xl mx-auto mt-8 flex items-center justify-between px-4 relative">
+            <button
+              className="flex items-center gap-2 text-white font-bold text-3xl md:text-4xl mb-0 text-left focus:outline-none"
+              onClick={() => setDropdownOpen((v) => !v)}
+              aria-haspopup="listbox"
+              aria-expanded={dropdownOpen}
+              style={{ position: 'relative' }}
+            >
+              <span className="block md:hidden">Thoughts</span>
+              <span className="hidden md:block">Home</span>
+              <ChevronDown className={`w-6 h-6 ml-2 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
+            </button>
+            {/* Post a Thought button for mobile, right-aligned */}
+            <button
+              className="block md:hidden ml-auto bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-blue-600 text-white rounded-full shadow-lg p-2 transition-all duration-300 focus:outline-none"
+              style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.3)' }}
+              onClick={() => setIsComposerOpen(true)}
+              aria-label="Post a thought"
+            >
+              <Plus className="w-6 h-6" />
+            </button>
+            {dropdownOpen && (
+              <div className="absolute left-0 mt-12 z-50 bg-black/80 text-white rounded-xl shadow-lg py-2 px-4 min-w-[160px] backdrop-blur-md border border-white/10">
                 <button
-                  onClick={() => handleCommunitySelect('')}
-                  className="text-gray-400 hover:text-white transition-colors text-sm"
+                  className={`block w-full text-left px-2 py-2 rounded-lg text-base hover:bg-white/10 transition-colors ${thoughtsFilter === 'public' ? 'font-bold' : ''}`}
+                  onClick={() => { setThoughtsFilter('public'); setDropdownOpen(false); }}
                 >
-                  Clear filter
+                  Public
+                </button>
+                <button
+                  className={`block w-full text-left px-2 py-2 rounded-lg text-base hover:bg-white/10 transition-colors ${thoughtsFilter === 'friends' ? 'font-bold' : ''}`}
+                  onClick={() => { setThoughtsFilter('friends'); setDropdownOpen(false); }}
+                >
+                  Friends-only
+                </button>
+                <button
+                  className={`block w-full text-left px-2 py-2 rounded-lg text-base hover:bg-white/10 transition-colors ${thoughtsFilter === 'uni' ? 'font-bold' : ''}`}
+                  onClick={() => { setThoughtsFilter('uni'); setDropdownOpen(false); }}
+                >
+                  Uni-only
                 </button>
               </div>
             )}
+          </div>
+          <div className="border-b-2 border-white/60 w-full mb-6" />
+          {/* Inline composer on desktop only */}
+          <div className="hidden md:block mb-8 max-w-3xl mx-auto w-full">
+            <EnhancedThoughtComposer onThoughtPosted={handleThoughtPosted} />
+          </div>
+          {/* Modal composer for mobile only */}
+          <EnhancedThoughtComposer
+            onThoughtPosted={() => { setIsComposerOpen(false); handleThoughtPosted(); }}
+            isOpen={isComposerOpen}
+            onClose={() => setIsComposerOpen(false)}
+            placeholder="What's on your mind?"
+            parentId={undefined}
+            key="modal-composer"
+          />
 
-            {/* Thoughts Section Heading and Divider */}
-            <div className="w-full max-w-3xl mx-auto mt-8 flex items-center justify-between px-4 relative">
-              <button
-                className="flex items-center gap-2 text-white font-bold text-3xl md:text-4xl mb-0 text-left focus:outline-none"
-                onClick={() => setDropdownOpen((v) => !v)}
-                aria-haspopup="listbox"
-                aria-expanded={dropdownOpen}
-                style={{ position: 'relative' }}
-              >
-                <span className="block md:hidden">Thoughts</span>
-                <span className="hidden md:block">Home</span>
-                <ChevronDown className={`w-6 h-6 ml-2 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
-              </button>
-              {/* Post a Thought button for mobile, right-aligned */}
-              <button
-                className="block md:hidden ml-auto bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-blue-600 text-white rounded-full shadow-lg p-2 transition-all duration-300 focus:outline-none"
-                style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.3)' }}
-                onClick={() => setIsComposerOpen(true)}
-                aria-label="Post a thought"
-              >
-                <Plus className="w-6 h-6" />
-              </button>
-              {dropdownOpen && (
-                <div className="absolute left-0 mt-12 z-50 bg-black/80 text-white rounded-xl shadow-lg py-2 px-4 min-w-[160px] backdrop-blur-md border border-white/10">
-                  <button
-                    className={`block w-full text-left px-2 py-2 rounded-lg text-base hover:bg-white/10 transition-colors ${thoughtsFilter === 'public' ? 'font-bold' : ''}`}
-                    onClick={() => { setThoughtsFilter('public'); setDropdownOpen(false); }}
-                  >
-                    Public
-                  </button>
-                  <button
-                    className={`block w-full text-left px-2 py-2 rounded-lg text-base hover:bg-white/10 transition-colors ${thoughtsFilter === 'friends' ? 'font-bold' : ''}`}
-                    onClick={() => { setThoughtsFilter('friends'); setDropdownOpen(false); }}
-                  >
-                    Friends-only
-                  </button>
-                  <button
-                    className={`block w-full text-left px-2 py-2 rounded-lg text-base hover:bg-white/10 transition-colors ${thoughtsFilter === 'uni' ? 'font-bold' : ''}`}
-                    onClick={() => { setThoughtsFilter('uni'); setDropdownOpen(false); }}
-                  >
-                    Uni-only
-                  </button>
-                </div>
-              )}
-            </div>
-            <div className="border-b-2 border-white/60 w-full mb-6" />
-            {/* Inline composer on desktop only */}
-            <div className="hidden md:block mb-8 max-w-3xl mx-auto w-full">
-              <EnhancedThoughtComposer onThoughtPosted={handleThoughtPosted} />
-            </div>
-            {/* Modal composer for mobile only */}
-            <EnhancedThoughtComposer
-              onThoughtPosted={() => { setIsComposerOpen(false); handleThoughtPosted(); }}
-              isOpen={isComposerOpen}
-              onClose={() => setIsComposerOpen(false)}
-              placeholder="What's on your mind?"
-              parentId={undefined}
-              key="modal-composer"
-            />
+          {/* Mobile Layout */}
+          <div className="block md:hidden space-y-6">
+            <ErrorBoundary>
+              <div className="mobile-card">
+                {/* QuickProfile hidden on mobile */}
+              </div>
+            </ErrorBoundary>
+            <ErrorBoundary>
+              <div className="mobile-card">
+                {/* EnhancedThoughtComposer removed from here */}
+              </div>
+            </ErrorBoundary>
+            <ErrorBoundary>
+              <div className="mobile-card">
+                <EnhancedThoughtsFeed 
+                  key={`${selectedCommunity}-${refreshFeed}-${thoughtsFilter}`}
+                  communityFilter={selectedCommunity}
+                  filter={thoughtsFilter}
+                />
+              </div>
+            </ErrorBoundary>
+          </div>
 
-            {/* Mobile Layout */}
-            <div className="block md:hidden space-y-6">
+          {/* Desktop Layout */}
+          <div className="hidden md:grid md:grid-cols-4 gap-8">
+            {/* Left Sidebar */}
+            <div className="col-span-1 space-y-8">
+              {/* <ErrorBoundary>
+                <QuickProfile />
+              </ErrorBoundary> */}
               <ErrorBoundary>
-                <div className="mobile-card">
-                  {/* QuickProfile hidden on mobile */}
-                </div>
-              </ErrorBoundary>
-              <ErrorBoundary>
-                <div className="mobile-card">
-                  {/* EnhancedThoughtComposer removed from here */}
-                </div>
-              </ErrorBoundary>
-              <ErrorBoundary>
-                <div className="mobile-card">
-                  <EnhancedThoughtsFeed 
-                    key={`${selectedCommunity}-${refreshFeed}-${thoughtsFilter}`}
-                    communityFilter={selectedCommunity}
-                    filter={thoughtsFilter}
-                  />
-                </div>
+                <RealtimeCommunitiesList 
+                  selectedCommunity={selectedCommunity}
+                  onCommunitySelect={setSelectedCommunity}
+                />
               </ErrorBoundary>
             </div>
 
-            {/* Desktop Layout */}
-            <div className="hidden md:grid md:grid-cols-4 gap-8">
-              {/* Left Sidebar */}
-              <div className="col-span-1 space-y-8">
-                {/* <ErrorBoundary>
-                  <QuickProfile />
-                </ErrorBoundary> */}
-                <ErrorBoundary>
-                  <RealtimeCommunitiesList 
-                    selectedCommunity={selectedCommunity}
-                    onCommunitySelect={setSelectedCommunity}
-                  />
-                </ErrorBoundary>
-              </div>
+            {/* Main Content */}
+            <div className="col-span-2 space-y-8 max-w-3xl mx-auto w-full">
+              <ErrorBoundary>
+                {/* EnhancedThoughtComposer removed from here */}
+              </ErrorBoundary>
+              <ErrorBoundary>
+                <EnhancedThoughtsFeed 
+                  key={`${selectedCommunity}-${refreshFeed}-${thoughtsFilter}`}
+                  communityFilter={selectedCommunity}
+                  filter={thoughtsFilter}
+                />
+              </ErrorBoundary>
+            </div>
 
-              {/* Main Content */}
-              <div className="col-span-2 space-y-8 max-w-3xl mx-auto w-full">
-                <ErrorBoundary>
-                  {/* EnhancedThoughtComposer removed from here */}
-                </ErrorBoundary>
-                <ErrorBoundary>
-                  <EnhancedThoughtsFeed 
-                    key={`${selectedCommunity}-${refreshFeed}-${thoughtsFilter}`}
-                    communityFilter={selectedCommunity}
-                    filter={thoughtsFilter}
-                  />
-                </ErrorBoundary>
-              </div>
-
-              {/* Right Sidebar */}
-              <div className="col-span-1 space-y-8">
-                <ErrorBoundary>
-                  <TrendingSidebar onCommunitySelect={handleCommunitySelect} />
-                </ErrorBoundary>
-                <ErrorBoundary>
-                  <PeopleYouMayKnow />
-                </ErrorBoundary>
-              </div>
+            {/* Right Sidebar */}
+            <div className="col-span-1 space-y-8">
+              <ErrorBoundary>
+                <TrendingSidebar onCommunitySelect={handleCommunitySelect} />
+              </ErrorBoundary>
+              <ErrorBoundary>
+                <PeopleYouMayKnow />
+              </ErrorBoundary>
             </div>
           </div>
         </div>
-      </PullToRefresh>
+      </div>
     </>
   );
 }

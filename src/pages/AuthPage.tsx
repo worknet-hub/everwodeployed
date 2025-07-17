@@ -6,7 +6,6 @@ import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import PullToRefresh from 'react-pull-to-refresh';
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogAction } from '@/components/ui/alert-dialog';
 
 const AuthPage = () => {
@@ -144,7 +143,7 @@ const AuthPage = () => {
   }
 
   return (
-    <PullToRefresh onRefresh={() => window.location.reload()}>
+    <>
       <div className="min-h-screen" style={{ backgroundColor: '#000000' }}>
         <div className="container mx-auto px-4 py-8">
           <div className="max-w-6xl mx-auto">
@@ -339,7 +338,7 @@ const AuthPage = () => {
           </AlertDialogAction>
         </AlertDialogContent>
       </AlertDialog>
-    </PullToRefresh>
+    </>
   );
 };
 

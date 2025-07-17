@@ -3,7 +3,6 @@ import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import PullToRefresh from 'react-pull-to-refresh';
 
 const questions = [
   'How easy is it to navigate the website?',
@@ -97,7 +96,7 @@ const ReviewsPage: React.FC = () => {
   }
 
   return (
-    <PullToRefresh onRefresh={() => window.location.reload()}>
+    <>
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-100/60 via-purple-100/60 to-pink-100/60 dark:from-[#18181b] dark:via-[#23232b] dark:to-[#18181b] fade-in">
         <div className="max-w-xl w-full relative p-8 bg-white/90 dark:bg-[#18181b]/90 rounded-2xl shadow-2xl fade-in">
           <button
@@ -175,7 +174,7 @@ const ReviewsPage: React.FC = () => {
         .fade-in { animation: fadeIn 0.7s; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(30px);} to { opacity: 1; transform: none; } }
       `}</style>
-    </PullToRefresh>
+    </>
   );
 };
 

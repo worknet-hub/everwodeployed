@@ -4,13 +4,12 @@ import Header from '@/components/layout/Header';
 import JobHouse from '@/components/jobs/JobHouse';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
-import PullToRefresh from 'react-pull-to-refresh';
 
 const JobHousePage = () => {
   const navigate = useNavigate();
 
   return (
-    <PullToRefresh onRefresh={() => window.location.reload()}>
+    <>
       <div className="min-h-screen bg-gradient-to-br from-everwo-light via-white to-everwo-light/30">
         <Header />
         
@@ -32,7 +31,7 @@ const JobHousePage = () => {
           <JobHouse />
         </div>
       </div>
-    </PullToRefresh>
+    </>
   );
 };
 
