@@ -72,6 +72,7 @@ export default function UserThoughtsList({ userId }: UserThoughtsListProps) {
       college: thought.profiles?.college_name || '',
       verified: thought.profiles?.college_verified || false,
       username: thought.profiles?.username || '',
+      id: thought.user_id // Add id for navigation fallback
     };
     return (
       <div style={style}>

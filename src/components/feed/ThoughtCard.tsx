@@ -119,7 +119,13 @@ const ThoughtCard = ({
           <div className="flex items-center space-x-2 md:space-x-4">
             {safeAuthor?.username && safeAuthor.username.trim() !== '' ? (
               <div className="flex items-center space-x-2 md:space-x-4 focus:outline-none">
-                <div className="cursor-pointer" onClick={() => navigate(`/profile/${safeAuthor.id}`)}>
+                <div className="cursor-pointer" onClick={() => {
+                  if (safeAuthor?.username && safeAuthor.username.trim() !== '') {
+                    navigate(`/profile/${safeAuthor.username}`);
+                  } else if (safeAuthor?.id) {
+                    navigate(`/profile/${safeAuthor.id}`);
+                  }
+                }}>
                   <Avatar className="w-9 h-9 md:w-12 md:h-12 ring-2 ring-white/20 ring-offset-2 ring-offset-transparent transition-all duration-300 group-hover:ring-gray-400/50">
                     <AvatarImage src={safeAuthor.avatar} />
                     <AvatarFallback className="bg-gradient-to-br from-gray-700 to-gray-900 text-white font-semibold">
@@ -127,7 +133,13 @@ const ThoughtCard = ({
                     </AvatarFallback>
                   </Avatar>
                 </div>
-                <span className="font-semibold text-foreground text-sm md:text-base cursor-pointer" onClick={() => navigate(`/profile/${safeAuthor.id}`)}>{safeAuthor.username}</span>
+                <span className="font-semibold text-foreground text-sm md:text-base cursor-pointer" onClick={() => {
+                  if (safeAuthor?.username && safeAuthor.username.trim() !== '') {
+                    navigate(`/profile/${safeAuthor.username}`);
+                  } else if (safeAuthor?.id) {
+                    navigate(`/profile/${safeAuthor.id}`);
+                  }
+                }}>{safeAuthor.username}</span>
                 {/* Three dots dropdown for delete, right beside username */}
                 {canDelete && (
                   <DropdownMenu>

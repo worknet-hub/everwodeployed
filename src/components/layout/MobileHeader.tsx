@@ -77,21 +77,35 @@ const MobileHeader = () => {
 
                 {/* Navigation */}
                 <div className="flex-1 space-y-2">
-                  {navigation.map((item) => (
-                    <Link
-                      key={item.name}
-                      to={item.path}
-                      onClick={() => setIsOpen(false)}
-                      className={`flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
-                        location.pathname === item.path
-                          ? 'bg-white text-black'
-                          : 'text-gray-300 hover:text-white hover:bg-[#2a2f3e]'
-                      }`}
-                    >
-                      <item.icon className="w-5 h-5" />
-                      <span>{item.name}</span>
-                    </Link>
-                  ))}
+                  {navigation.map((item) => {
+                    if (item.name === 'View Communities') {
+                      return (
+                        <div
+                          key={item.name}
+                          className="flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-400 bg-[#18181b] opacity-60 cursor-not-allowed select-none"
+                        >
+                          <item.icon className="w-5 h-5" />
+                          <span>{item.name}</span>
+                          <span className="ml-2 text-xs text-gray-500">coming soon</span>
+                        </div>
+                      );
+                    }
+                    return (
+                      <Link
+                        key={item.name}
+                        to={item.path}
+                        onClick={() => setIsOpen(false)}
+                        className={`flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
+                          location.pathname === item.path
+                            ? 'bg-white text-black'
+                            : 'text-gray-300 hover:text-white hover:bg-[#2a2f3e]'
+                        }`}
+                      >
+                        <item.icon className="w-5 h-5" />
+                        <span>{item.name}</span>
+                      </Link>
+                    );
+                  })}
 
                   {userMenu.map((item) => (
                     <Link

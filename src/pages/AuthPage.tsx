@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import PullToRefresh from 'react-pull-to-refresh';
+import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogAction } from '@/components/ui/alert-dialog';
 
 const AuthPage = () => {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -17,6 +18,14 @@ const AuthPage = () => {
   const [college, setCollege] = useState('');
   const [loading, setLoading] = useState(false);
   const [policyAccepted, setPolicyAccepted] = useState(false);
+  const [showVerificationModal, setShowVerificationModal] = useState(false);
+  const [acceptPolicy, setAcceptPolicy] = useState(false);
+  const [policyWarning, setPolicyWarning] = useState('');
+  const [usernameWarning, setUsernameWarning] = useState('');
+  const [acceptSignUpPolicy, setAcceptSignUpPolicy] = useState(false);
+  const [acceptSignInPolicy, setAcceptSignInPolicy] = useState(false);
+  const [signUpPolicyWarning, setSignUpPolicyWarning] = useState('');
+  const [signInPolicyWarning, setSignInPolicyWarning] = useState('');
   const { user, signIn, signUp, loading: authLoading, isAdmin } = useAuth();
   const navigate = useNavigate();
 
@@ -39,21 +48,30 @@ const AuthPage = () => {
         .single();
       if (profile?.impersonation_policy_accepted) {
         setPolicyAccepted(true);
+        setAcceptPolicy(true); // Automatically accept if already accepted
       } else {
         setPolicyAccepted(false);
+        setAcceptPolicy(false);
       }
     };
-    if (!isSignUp) checkPolicyAccepted();
+    if (isSignUp) checkPolicyAccepted();
   }, [email, isSignUp]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    // setUsernameWarning(''); // This state variable is not defined in the original file
-    // setPolicyWarning(''); // This state variable is not defined in the original file
+    setUsernameWarning('');
+    setPolicyWarning('');
+    setSignUpPolicyWarning('');
+    setSignInPolicyWarning('');
 
-    // if (isSignUp && !acceptPolicy && !policyAccepted) { // This line uses 'acceptPolicy' which is not defined
-    //   setPolicyWarning('You must accept the Impersonation Policy to sign up.');
+    // if (isSignUp && !acceptSignUpPolicy) {
+    //   setSignUpPolicyWarning('You must accept the Impersonation Policy to sign up.');
+    //   setLoading(false);
+    //   return;
+    // }
+    // if (!isSignUp && !acceptSignInPolicy) {
+    //   setSignInPolicyWarning('You must accept the Impersonation Policy to sign in.');
     //   setLoading(false);
     //   return;
     // }
@@ -81,23 +99,7 @@ const AuthPage = () => {
           impersonation_policy_accepted: true,
         });
         if (error) throw error;
-        toast.success('Check your email to verify your account!');
-        // Check onboarding status before redirecting
-        const { data: { user: signedUpUser } } = await supabase.auth.getUser();
-        if (signedUpUser) {
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('onboarding_completed')
-            .eq('id', signedUpUser.id)
-            .single();
-          if (profile?.onboarding_completed) {
-            navigate('/', { replace: true });
-          } else {
-            navigate('/onboarding', { replace: true });
-          }
-        } else {
-          navigate('/onboarding', { replace: true });
-        }
+        setShowVerificationModal(true); // Show modal after signup
         return;
       } else {
         const { data: profile } = await supabase
@@ -105,12 +107,12 @@ const AuthPage = () => {
           .select('impersonation_policy_accepted')
           .eq('email', email)
           .single();
-        if (!profile?.impersonation_policy_accepted) {
-          // setPolicyWarning('You must accept the Impersonation Policy to sign in.'); // This state variable is not defined
-          toast.error('You must accept the Impersonation Policy to sign in.');
-          setLoading(false);
-          return;
-        }
+        // if (!profile?.impersonation_policy_accepted) {
+        //   // setPolicyWarning('You must accept the Impersonation Policy to sign in.'); // This state variable is not defined
+        //   toast.error('You must accept the Impersonation Policy to sign in.');
+        //   setLoading(false);
+        //   return;
+        // }
         const { error } = await signIn(email, password);
         if (error) {
           // Check if it's admin credentials even if auth fails
@@ -170,82 +172,75 @@ const AuthPage = () => {
                     {isSignUp && (
                       <>
                         <div className="space-y-2">
-                          <Label htmlFor="fullName" className="text-sm font-medium">Full Name</Label>
+                          <Label htmlFor="fullName" className="text-sm font-medium text-gray-300">Full Name</Label>
                           <Input
                             id="fullName"
                             value={fullName}
                             onChange={(e) => setFullName(e.target.value)}
                             required
-                            className="h-11 rounded-xl"
+                            className="h-11 rounded-xl bg-[rgba(0,0,0,0.7)] border-[#2a2f3e] text-white placeholder:text-gray-500"
                             placeholder="Enter your full name"
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="username" className="text-sm font-medium">Username</Label>
+                          <Label htmlFor="username" className="text-sm font-medium text-gray-300">Username</Label>
                           <Input
                             id="username"
                             value={username}
-                            onChange={(e) => setUsername(e.target.value)}
+                            onChange={(e) => { setUsername(e.target.value); setUsernameWarning(''); }}
                             required
-                            className="h-11 rounded-xl"
+                            className="h-11 rounded-xl bg-[rgba(0,0,0,0.7)] border-[#2a2f3e] text-white placeholder:text-gray-500"
                             placeholder="Choose a username"
                           />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="college" className="text-sm font-medium">College</Label>
-                          <Input
-                            id="college"
-                            value={college}
-                            onChange={(e) => setCollege(e.target.value)}
-                            className="h-11 rounded-xl"
-                            placeholder="Your college/university"
-                          />
+                          {usernameWarning && (
+                            <div className="text-red-500 text-xs mt-1">{usernameWarning}</div>
+                          )}
                         </div>
                       </>
                     )}
                     
                     <div className="space-y-2">
-                      <Label htmlFor="email" className="text-sm font-medium">Email</Label>
+                      <Label htmlFor="email" className="text-sm font-medium text-gray-300">Email</Label>
                       <Input
                         id="email"
                         type="email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         required
-                        className="h-11 rounded-xl"
+                        className="h-11 rounded-xl bg-[rgba(0,0,0,0.7)] border-[#2a2f3e] text-white placeholder:text-gray-500"
                         placeholder="Enter your email"
                       />
                     </div>
                     
                     <div className="space-y-2">
-                      <Label htmlFor="password" className="text-sm font-medium">Password</Label>
+                      <Label htmlFor="password" className="text-sm font-medium text-gray-300">Password</Label>
                       <Input
                         id="password"
                         type="password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
-                        className="h-11 rounded-xl"
+                        className="h-11 rounded-xl bg-[rgba(0,0,0,0.7)] border-[#2a2f3e] text-white placeholder:text-gray-500"
                         placeholder="Enter your password"
                       />
                     </div>
 
-                    {/* Impersonation Policy */}
-                    {isSignUp && !policyAccepted && (
+                    {/* Impersonation Policy for Sign Up */}
+                    {isSignUp && (
                       <div className="mt-6 text-xs text-gray-400">
                         <div className="flex items-start mb-2">
                           <input
                             type="checkbox"
-                            id="impersonation-policy"
-                            checked={policyAccepted} // Changed from acceptPolicy to policyAccepted
-                            onChange={() => setPolicyAccepted(!policyAccepted)} // Changed from setAcceptPolicy to setPolicyAccepted
+                            id="impersonation-policy-signup"
+                            checked={acceptSignUpPolicy}
+                            onChange={e => setAcceptSignUpPolicy(e.target.checked)}
                             className="mr-2 mt-1"
                           />
-                          <label htmlFor="impersonation-policy" className="select-none">
+                          <label htmlFor="impersonation-policy-signup" className="select-none">
                             I have read and accept the <span className="font-semibold text-white">Impersonation Policy</span> below.
                           </label>
                         </div>
-                        {/* policyWarning && <div className="text-red-500 mb-2">{policyWarning}</div> */} {/* This state variable is not defined */}
+                        {signUpPolicyWarning && <div className="text-red-500 mb-2">{signUpPolicyWarning}</div>}
                         <div className="bg-black/70 border border-gray-700 rounded-lg p-4 mt-2 text-gray-300">
                           <div className="font-bold text-white mb-1">Impersonation Policy</div>
                           <div>
@@ -260,20 +255,61 @@ const AuthPage = () => {
                         </div>
                       </div>
                     )}
+                    {/* Impersonation Policy for Sign In */}
+                    {!isSignUp && (
+                      <div className="mt-6 text-xs text-gray-400">
+                        <div className="flex items-start mb-2">
+                          <input
+                            type="checkbox"
+                            id="impersonation-policy-signin"
+                            checked={acceptSignInPolicy}
+                            onChange={e => setAcceptSignInPolicy(e.target.checked)}
+                            className="mr-2 mt-1"
+                          />
+                          <label htmlFor="impersonation-policy-signin" className="select-none">
+                            I have read and accept the <span className="font-semibold text-white">Impersonation Policy</span> below.
+                          </label>
+                        </div>
+                        {signInPolicyWarning && <div className="text-red-500 mb-2">{signInPolicyWarning}</div>}
+                        <div className="bg-black/70 border border-gray-700 rounded-lg p-4 mt-2 text-gray-300">
+                          <div className="font-bold text-white mb-1">Impersonation Policy</div>
+                          <div>
+                            By signing in to Everwo, you confirm that the identity and university details you provide are true and your own. Any attempt to impersonate another person or falsely claim to be affiliated with a university or institution is a violation of our terms of service.<br /><br />
+                            If you are found to be impersonating another individual or misrepresenting your identity, Everwo reserves the right to:
+                            <ul className="list-disc ml-6 my-2">
+                              <li>Suspend or terminate your account without notice</li>
+                              <li>Share your account details (including IP address and login metadata) with authorized cyber crime authorities</li>
+                              <li>Report such actions to India’s Cyber Crime Cell under the IT Act, 2000</li>
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                    )}
 
-                    <Button 
-                      type="submit" 
-                      className="w-full h-11 text-base rounded-xl font-medium" 
-                      disabled={loading}
-                    >
-                      {loading ? 'Please wait...' : isSignUp ? 'Create Account' : 'Sign In'}
-                    </Button>
-
-                    <div className="text-center space-y-4">
+                    {/* Move Create Account button below policy */}
+                    {isSignUp && (
+                      <Button 
+                        type="submit" 
+                        className="w-full h-11 text-base rounded-xl font-medium bg-white hover:bg-gray-100 text-black mt-6" 
+                        disabled={loading || !acceptSignUpPolicy}
+                      >
+                        {loading ? 'Please wait...' : 'Create Account'}
+                      </Button>
+                    )}
+                    {!isSignUp && (
+                      <Button 
+                        type="submit" 
+                        className="w-full h-11 text-base rounded-xl font-medium bg-white hover:bg-gray-100 text-black" 
+                        disabled={loading || !acceptSignInPolicy}
+                      >
+                        {loading ? 'Please wait...' : 'Sign In'}
+                      </Button>
+                    )}
+                    <div className="text-center">
                       <Button
                         type="button"
                         variant="ghost"
-                        className="text-sm text-muted-foreground hover:text-foreground"
+                        className="text-sm text-gray-400 hover:text-white"
                         onClick={() => setIsSignUp(!isSignUp)}
                       >
                         {isSignUp 
@@ -281,9 +317,6 @@ const AuthPage = () => {
                           : "Don't have an account? Sign up"
                         }
                       </Button>
-                      
-                      {/* Alumni Portal Section - Made more prominent */}
-                      {/* Removed Alumni Portal section */}
                     </div>
                   </form>
                 </div>
@@ -292,6 +325,20 @@ const AuthPage = () => {
           </div>
         </div>
       </div>
+      {/* Place the modal at the root of the page */}
+      <AlertDialog open={showVerificationModal} onOpenChange={setShowVerificationModal}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Verification mail sent to your account</AlertDialogTitle>
+            <AlertDialogDescription>
+              Please check your email and follow the instructions to verify your account.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogAction onClick={() => { setShowVerificationModal(false); navigate('/onboarding', { replace: true }); }}>
+            Okay
+          </AlertDialogAction>
+        </AlertDialogContent>
+      </AlertDialog>
     </PullToRefresh>
   );
 };

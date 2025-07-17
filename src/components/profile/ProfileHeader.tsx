@@ -91,7 +91,8 @@ export const ProfileHeader = ({ profile, isOwnProfile, onEditClick, onAvatarChan
       const { count, error } = await supabase
         .from('thoughts')
         .select('id', { count: 'exact', head: true })
-        .eq('user_id', profile.id);
+        .eq('user_id', profile.id)
+        .is('parent_id', null); // Only count top-level thoughts
       if (!error && typeof count === 'number' && isMounted) {
         setThoughtCount(count);
       }

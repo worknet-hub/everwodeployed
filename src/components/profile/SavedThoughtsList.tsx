@@ -43,6 +43,7 @@ export default function SavedThoughtsList({ userId }: SavedThoughtsListProps) {
                 college: thought.profiles?.college_name || '',
                 verified: thought.profiles?.college_verified || false,
                 username: thought.profiles?.username || '',
+                id: thought.user_id // Add id for navigation fallback
               },
               content: thought.content,
               timestamp: thought.created_at,

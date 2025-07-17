@@ -45,8 +45,11 @@ export const QuickProfile = ({ userId, onClose }: QuickProfileProps) => {
 
 
   const handleViewFullProfile = () => {
-    console.log('Navigating to full profile');
-    navigate('/profile');
+    if (profile?.username && profile.username.trim() !== '') {
+      navigate(`/profile/${profile.username}`);
+    } else if (profile?.id) {
+      navigate(`/profile/${profile.id}`);
+    }
   };
 
 

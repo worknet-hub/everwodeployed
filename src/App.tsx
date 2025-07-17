@@ -64,7 +64,7 @@ function RequireOnboarding({ children }: { children: React.ReactNode }) {
           .eq('id', user.id)
           .single();
         if (error) throw error;
-        setOnboardingCompleted(profile?.onboarding_completed ?? false);
+        setOnboardingCompleted(!!profile?.onboarding_completed);
       } catch (err) {
         console.error('Error checking onboarding status:', err);
         setOnboardingCompleted(false); // fallback or show error UI if needed
@@ -88,7 +88,7 @@ function RequireOnboarding({ children }: { children: React.ReactNode }) {
             .eq('id', user.id)
             .single();
           if (error) throw error;
-          setOnboardingCompleted(profile?.onboarding_completed ?? false);
+          setOnboardingCompleted(!!profile?.onboarding_completed);
         } catch (err) {
           setOnboardingCompleted(false);
         } finally {
@@ -104,7 +104,7 @@ function RequireOnboarding({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (checking) return;
     if (!user) return;
-    if (onboardingCompleted === false && location.pathname !== '/onboarding' && location.pathname !== '/auth') {
+    if (!onboardingCompleted && location.pathname !== '/onboarding' && location.pathname !== '/auth') {
       navigate('/onboarding', { replace: true });
     }
   }, [checking, onboardingCompleted, user, location.pathname, navigate]);
@@ -169,7 +169,7 @@ const AppRoutes = () => {
                   <ProfilePage />
                 </Suspense>
               } />
-              <Route path="/profile/:userId" element={
+              <Route path="/profile/:profileId" element={
                 <Suspense fallback={<LoadingSpinner />}>
                   <ProfilePage />
                 </Suspense>

@@ -131,14 +131,8 @@ export const useRealtimeLikes = (thoughtIds: string[]) => {
             user_id: user.id
           });
       }
-
-      // Update the thought's likes_count
-      const newCount = (likes[thoughtId]?.count || 0) + (isCurrentlyLiked ? -1 : 1);
-      await supabase
-        .from('thoughts')
-        .update({ likes_count: newCount })
-        .eq('id', thoughtId);
-
+      // No direct update to thoughts.likes_count here. The trigger will handle it.
+      // The real-time subscription will refetch the count.
     } catch (error) {
       console.error('Error toggling like:', error);
       // Revert optimistic update on error

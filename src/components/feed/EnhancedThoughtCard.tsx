@@ -302,7 +302,7 @@ export const EnhancedThoughtCard = ({
             </button>
             {safeAuthor.username && safeAuthor.username.trim() !== '' ? (
               <div className="flex items-start space-x-3 md:space-x-4 focus:outline-none">
-                <div className="cursor-pointer" onClick={() => navigate(`/profile/${safeAuthor.id}`)}>
+                <div className="cursor-pointer" onClick={() => navigate(`/profile/${safeAuthor.username || safeAuthor.id}`)}>
                   <Avatar className="w-10 h-10 md:w-12 md:h-12">
                     <AvatarImage src={safeAuthor.avatar} />
                     <AvatarFallback>
@@ -313,7 +313,7 @@ export const EnhancedThoughtCard = ({
                 <div className="flex-1 space-y-2 md:space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2 flex-shrink-0">
-                      <span className="font-semibold text-foreground text-sm md:text-base cursor-pointer" onClick={() => navigate(`/profile/${safeAuthor.id}`)}>{safeAuthor.username}</span>
+                      <span className="font-semibold text-foreground text-sm md:text-base cursor-pointer" onClick={() => navigate(`/profile/${safeAuthor.username || safeAuthor.id}`)}>{safeAuthor.username}</span>
                       {safeAuthor.college && (
                         <span
                           className={`ml-2 px-2 py-0.5 rounded-full text-white text-xs font-medium shadow-sm ${userCollege && safeAuthor.college && userCollege.toLowerCase() === safeAuthor.college.toLowerCase() ? 'bg-green-600' : 'bg-blue-500/60'}`}
@@ -597,7 +597,7 @@ export const EnhancedThoughtCard = ({
 
                   {/* Friends badge for connections-only thoughts */}
                   {visibility === 'connections' && (
-                    <span className="absolute right-4 bottom-2 bg-green-900 text-white text-xs px-3 py-1 rounded-full shadow-md" style={{borderRadius: '12px 12px 12px 4px', background: 'linear-gradient(90deg, #14532d 80%, #166534 100%)'}}>
+                    <span className="absolute right-2 bottom-1 bg-green-900 text-white text-[10px] px-2 py-0.5 rounded-full shadow-md" style={{borderRadius: '12px 12px 12px 4px', background: 'linear-gradient(90deg, #14532d 80%, #166534 100%)'}}>
                       friends
                     </span>
                   )}

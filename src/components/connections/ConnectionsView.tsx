@@ -238,11 +238,11 @@ export const ConnectionsView = () => {
   // Helper to check connection/request status
   const getConnectionStatus = (profileId: string) => {
     // Sent: current user is requester, status is pending
-    const sent = connections.some(
+    const sent = connections.find(
       c => c.partner_id === profileId && c.status === 'pending' && c.requester_id === user.id
     );
     // Received: current user is addressee, status is pending
-    const received = connections.some(
+    const received = connections.find(
       c => c.partner_id === profileId && c.status === 'pending' && c.addressee_id === user.id
     );
     // Accepted: already connected
@@ -272,11 +272,8 @@ export const ConnectionsView = () => {
       fetchAllProfiles();
     } else if (sent) {
       try {
-        const pending = connections.find(
-          c => c.partner_id === profile.id && c.status === 'pending' && c.requester_id === user.id
-        );
-        if (pending) {
-          await supabase.from('connections').delete().eq('id', pending.connection_id);
+        if (sent) {
+          await supabase.from('connections').delete().eq('id', sent.connection_id);
           toast.success('Connection request cancelled');
           fetchConnections();
           fetchAllProfiles();
@@ -564,28 +561,30 @@ export const ConnectionsView = () => {
                         <div key={profile.id} className="relative flex flex-col items-center gap-2 p-6 bg-black/40 rounded-xl border border-white/10 shadow-md">
                           {/* College badge at top right */}
                           {profile.college_name && (
-                            <div className="absolute top-4 right-2 px-2 py-0.5 rounded-full bg-blue-900 text-white text-[10px] font-semibold tracking-wide">
+                            <div className="absolute top-2 right-2 px-1.5 py-0.5 rounded-full bg-blue-900 text-white text-[9px] font-semibold tracking-wide z-10">
                               {profile.college_name}
                             </div>
                           )}
                           {/* Avatar */}
-                          <Avatar className="w-16 h-16 mb-2 cursor-pointer" onClick={() => navigate(`/profile/${profile.id}`)}>
+                          <Avatar className="w-16 h-16 mb-2 cursor-pointer" onClick={() => navigate(`/profile/${profile.username || profile.id}`)}>
                             <AvatarImage src={profile.avatar_url} />
                             <AvatarFallback>
                               <User className="w-8 h-8 text-gray-300" />
                             </AvatarFallback>
                           </Avatar>
                           {/* Username centered and clickable */}
-                          <div className="font-bold text-white text-xl text-center mb-1 cursor-pointer" onClick={() => navigate(`/profile/${profile.id}`)}>
+                          <div className="font-bold text-white text-xl text-center mb-1 cursor-pointer" onClick={() => navigate(`/profile/${profile.username || profile.id}`)}>
                             {profile.username || profile.full_name}
                           </div>
                           {/* Interests label */}
                           <div className="text-gray-300 text-sm font-semibold mb-1">Interests:</div>
                           {/* Interests badges, max 4, 2 rows */}
                           {profile.interests && profile.interests.length > 0 && (
-                            <div className="flex flex-wrap gap-2 justify-center mb-1">
+                            <div className="flex flex-wrap gap-1 justify-center mb-1">
                               {profile.interests.slice(0, 4).map((interest) => (
-                                <span key={interest} className="bg-[#222] text-white font-semibold rounded-2xl px-4 py-1 text-base">{interest}</span>
+                                <span key={interest} className="bg-[#222] text-white font-semibold rounded-2xl px-2 py-0.5 text-xs">
+                                  {interest}
+                                </span>
                               ))}
                             </div>
                           )}
@@ -597,9 +596,11 @@ export const ConnectionsView = () => {
                           {common.length > 0 && (
                             <div className="w-full flex flex-col items-center mt-2">
                               <div className="text-gray-300 text-base font-semibold mb-1">Common:</div>
-                              <div className="flex flex-wrap gap-2 justify-center">
+                              <div className="flex flex-wrap gap-1 justify-center">
                                 {common.map((interest) => (
-                                  <span key={interest} className="bg-white text-blue-700 font-bold rounded-2xl px-4 py-1 text-base">{interest}</span>
+                                  <span key={interest} className="bg-white text-blue-700 font-bold rounded-2xl px-2 py-0.5 text-xs">
+                                    {interest}
+                                  </span>
                                 ))}
                               </div>
                             </div>
@@ -607,19 +608,13 @@ export const ConnectionsView = () => {
                           {/* Request button centered below */}
                           <Button
                             size="sm"
-                            disabled={received}
+                            disabled={!!received}
                             onClick={() => {
                               if (sent) {
-                                // Cancel the sent request (delete the connection row)
-                                const pending = connections.find(
-                                  c => c.partner_id === profile.id && c.status === 'pending' && c.requester_id === user.id
-                                );
-                                if (pending) {
-                                  supabase.from('connections').delete().eq('id', pending.connection_id).then(() => {
-                                    fetchConnections();
-                                    fetchAllProfiles();
-                                  });
-                                }
+                                supabase.from('connections').delete().eq('id', sent.connection_id).then(() => {
+                                  fetchConnections();
+                                  fetchAllProfiles();
+                                });
                               } else {
                                 handleConnectClick(profile);
                               }

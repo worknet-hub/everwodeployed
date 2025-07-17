@@ -12,6 +12,7 @@ import { X } from 'lucide-react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/ui/button';
+import { InterestsSelector } from '@/components/communities/InterestsSelector';
 
 export const OnboardingContainer = () => {
   const { user, loading } = useAuth();
@@ -28,6 +29,7 @@ export const OnboardingContainer = () => {
     major: '',
     theme: 'dark' as 'dark' | 'light'
   });
+  const [lastInterestsUpdate, setLastInterestsUpdate] = useState<Date | null>(null);
 
   const totalSteps = 4;
   const isMobile = useIsMobile();
@@ -60,6 +62,7 @@ export const OnboardingContainer = () => {
             major: profile.major || '',
             theme: 'dark'
           });
+          setLastInterestsUpdate(profile.last_interests_update ? new Date(profile.last_interests_update) : null);
         }
       } catch (error) {
         console.error('Error checking profile:', error);
@@ -112,18 +115,17 @@ export const OnboardingContainer = () => {
         .eq('id', user.id)
         .single();
 
+      let error;
       if (existingProfile) {
-        const { error } = await supabase
+        ({ error } = await supabase
           .from('profiles')
           .update({
             ...profileData,
             onboarding_completed: true
           })
-          .eq('id', user.id);
-
-        if (error) throw error;
+          .eq('id', user.id));
       } else {
-        const { error } = await supabase
+        ({ error } = await supabase
           .from('profiles')
           .insert({
             id: user.id,
@@ -132,16 +134,20 @@ export const OnboardingContainer = () => {
             avatar_url: user.user_metadata?.avatar_url || null,
             ...profileData,
             onboarding_completed: true
-          });
-
-        if (error) throw error;
+          }));
       }
-
+      if (error) {
+        toast.error('Failed to complete onboarding: ' + error.message);
+        setIsCompleting(false);
+        return;
+      }
+      // Force reload of user session/profile to pick up onboarding_completed
+      await supabase.auth.refreshSession();
       toast.success('Welcome to Everwo! 🎉');
       navigate('/', { state: { justOnboarded: true } });
     } catch (error: any) {
       console.error('Error completing onboarding:', error);
-      toast.error('Failed to complete setup');
+      toast.error('Failed to complete setup: ' + (error?.message || error));
     } finally {
       setIsCompleting(false);
     }
@@ -149,6 +155,29 @@ export const OnboardingContainer = () => {
 
   const updateOnboardingData = (data: Partial<typeof onboardingData>) => {
     setOnboardingData(prev => ({ ...prev, ...data }));
+  };
+
+  const canEditInterests = !lastInterestsUpdate || (Date.now() - lastInterestsUpdate.getTime()) > 14 * 24 * 60 * 60 * 1000;
+
+  const handleInterestsSubmit = async () => {
+    if (onboardingData.interests.length < 3 || onboardingData.interests.length > 7) {
+      toast.error('Please select between 3 and 7 interests.');
+      return;
+    }
+    // Save interests and timestamp
+    const { error } = await supabase
+      .from('profiles')
+      .update({
+        interests: onboardingData.interests,
+        last_interests_update: new Date().toISOString()
+      })
+      .eq('id', user.id);
+    if (error) {
+      toast.error('Failed to save interests: ' + error.message);
+      return;
+    }
+    setLastInterestsUpdate(new Date());
+    handleNext();
   };
 
   const screens = [
@@ -162,6 +191,26 @@ export const OnboardingContainer = () => {
       isCompleting={isCompleting}
       locked={currentStep > 0}
     />,
+    <div key="interests" className="flex flex-col items-center justify-center min-h-[60vh]">
+      <InterestsSelector
+        selectedInterests={onboardingData.interests}
+        onInterestsChange={canEditInterests ? (interests) => updateOnboardingData({ interests }) : () => {}}
+        minInterests={3}
+        maxInterests={7}
+      />
+      <div className="mt-4 flex flex-col items-center">
+        {!canEditInterests && (
+          <div className="text-red-500 mb-2">You can only change your interests once every 14 days.</div>
+        )}
+        <Button
+          className="mt-2"
+          onClick={handleInterestsSubmit}
+          disabled={!canEditInterests || onboardingData.interests.length < 3 || onboardingData.interests.length > 7}
+        >
+          Save Interests & Continue
+        </Button>
+      </div>
+    </div>,
     <BuildConnectionsScreen key="connections" onNext={handleNext} onPrevious={handlePrevious} />,
     <PostThoughtsScreen key="thoughts" onNext={handleNext} onPrevious={handlePrevious} />,
     <RealtimeFeaturesScreen key="realtime" onNext={handleNext} onPrevious={handlePrevious} />

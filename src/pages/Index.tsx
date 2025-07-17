@@ -38,6 +38,9 @@ const Index = () => {
   const [usernameWarning, setUsernameWarning] = useState('');
   const [acceptPolicy, setAcceptPolicy] = useState(false);
   const [policyWarning, setPolicyWarning] = useState('');
+  // Moved up: thoughtsFilter and dropdownOpen
+  const [thoughtsFilter, setThoughtsFilter] = useState<'public' | 'friends'>('public');
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   // Handle community filtering from URL params
   useEffect(() => {
@@ -67,11 +70,11 @@ const Index = () => {
     setUsernameWarning('');
     setPolicyWarning('');
 
-    if (!acceptPolicy) {
-      setPolicyWarning('You must accept the Impersonation Policy to sign up.');
-      setLoading(false);
-      return;
-    }
+    // if (!acceptPolicy) {
+    //   setPolicyWarning('You must accept the Impersonation Policy to sign up.');
+    //   setLoading(false);
+    //   return;
+    // }
 
     try {
       if (isSignUp) {
@@ -281,9 +284,6 @@ const Index = () => {
     );
   }
 
-  const [thoughtsFilter, setThoughtsFilter] = useState<'public' | 'friends'>('public');
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-
   return (
     <>
       <Header />
@@ -430,21 +430,8 @@ const Index = () => {
           </div>
         </div>
       </PullToRefresh>
-      <AlertDialog open={showVerificationModal} onOpenChange={setShowVerificationModal}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Verification mail sent to your account</AlertDialogTitle>
-            <AlertDialogDescription>
-              Please check your email and follow the instructions to verify your account.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogAction onClick={() => { setShowVerificationModal(false); navigate('/onboarding', { replace: true }); }}>
-            Okay
-          </AlertDialogAction>
-        </AlertDialogContent>
-      </AlertDialog>
     </>
   );
-};
+}
 
 export default Index;

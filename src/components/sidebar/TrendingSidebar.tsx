@@ -8,7 +8,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import {
   TrendingUp,
   Hash,
-  ExternalLink
+  ExternalLink,
+  Lock
 } from 'lucide-react';
 import { useTrendingData } from '@/hooks/useTrendingData';
 import { useNavigate } from 'react-router-dom';
@@ -82,7 +83,7 @@ const TrendingSidebar = ({ onCommunitySelect }: TrendingSidebarProps) => {
   return (
     <div className="space-y-6">
       {/* Trending Topics */}
-      <Card className="bg-[rgba(0,0,0,0.7)] shadow-2xl border border-white/10 text-white">
+      <Card className="bg-[rgba(0,0,0,0.7)] shadow-2xl border border-white/10 text-white relative overflow-hidden">
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center space-x-2 text-lg text-white">
             <TrendingUp className="w-5 h-5" />
@@ -96,8 +97,7 @@ const TrendingSidebar = ({ onCommunitySelect }: TrendingSidebarProps) => {
             trendingTopics.map((topic, index) => (
               <div 
                 key={index} 
-                className="flex items-center justify-between group cursor-pointer hover:bg-white/5 p-2 rounded transition-colors"
-                onClick={() => handleTopicClick(topic.tag)}
+                className="flex items-center justify-between group cursor-pointer hover:bg-white/5 p-2 rounded transition-colors pointer-events-none"
               >
                 <div className="flex items-center space-x-2">
                   <Hash className="w-4 h-4 text-gray-300" />
@@ -117,11 +117,10 @@ const TrendingSidebar = ({ onCommunitySelect }: TrendingSidebarProps) => {
           {trendingTopics.length > 0 && (
             <Button 
               variant="ghost" 
-              className="w-full justify-start text-sm text-gray-300 hover:bg-white/10 hover:text-white"
-              onClick={() => onCommunitySelect && onCommunitySelect('')}
+              className="w-full justify-start text-sm text-gray-300 hover:bg-white/10 hover:text-white pointer-events-none"
             >
               <ExternalLink className="w-4 h-4 mr-2" />
-              View all communities
+              View All Communities
             </Button>
           )}
         </CardContent>

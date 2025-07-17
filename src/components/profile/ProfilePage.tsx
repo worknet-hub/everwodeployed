@@ -40,31 +40,58 @@ interface Profile {
 }
 
 interface ProfilePageProps {
-  userId?: string;
+  profileId?: string;
 }
 
-export const ProfilePage = ({ userId }: ProfilePageProps) => {
+export const ProfilePage = ({ profileId }: ProfilePageProps) => {
   const { user } = useAuth();
   const { profiles, connections } = useRealtimeProfile();
   const navigate = useNavigate();
   const [showEditModal, setShowEditModal] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
+  const [fetchedProfile, setFetchedProfile] = useState<any>(null);
+  const [loadingProfile, setLoadingProfile] = useState(false);
 
-  const isOwnProfile = !userId || userId === user?.id;
-  const profileId = userId || user?.id;
+  // Try to find profile by id, then by username
+  let profile = null;
+  if (profileId) {
+    profile = profiles?.find((p: any) => p.id === profileId) || profiles?.find((p: any) => p.username === profileId) || null;
+  } else {
+    profile = profiles?.find((p: any) => p.id === user?.id) || null;
+  }
 
-  // Find the profile from context
-  const profile = profiles?.find((p: any) => p.id === profileId) || null;
+  // Fallback: fetch from Supabase if not found in context
+  useEffect(() => {
+    let isMounted = true;
+    const fetchProfile = async () => {
+      if (profile || !profileId) return;
+      setLoadingProfile(true);
+      let { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .or(`id.eq.${profileId},username.eq.${profileId}`)
+        .single();
+      if (isMounted) {
+        setFetchedProfile(data || null);
+        setLoadingProfile(false);
+      }
+    };
+    fetchProfile();
+    return () => { isMounted = false; };
+  }, [profile, profileId]);
 
+  const finalProfile = profile || fetchedProfile;
+
+  const isOwnProfile = !profileId || profileId === user?.id || profileId === user?.username;
   // Check if onboarding is completed
-  const onboardingCompleted = profile?.onboarding_completed;
+  const onboardingCompleted = finalProfile?.onboarding_completed;
 
   const handleAvatarChange = (newAvatarUrl: string) => {
     // Optionally update avatar locally for instant UI feedback
     // Real-time update will come from context
   };
 
-  if (!profile) {
+  if (!finalProfile || loadingProfile) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-black">
         <img src="/logo.png" alt="Loading..." className="w-48 h-48 object-contain animate-pulse" style={{ maxWidth: '80vw', maxHeight: '80vh' }} />
@@ -104,7 +131,7 @@ export const ProfilePage = ({ userId }: ProfilePageProps) => {
         <Card className="shadow-none border-0">
           <CardContent className="p-8">
             <ProfileHeader 
-              profile={profile} 
+              profile={finalProfile} 
               isOwnProfile={isOwnProfile} 
               onEditClick={() => setShowEditModal(true)}
               onAvatarChange={isOwnProfile ? handleAvatarChange : undefined}
@@ -128,16 +155,16 @@ export const ProfilePage = ({ userId }: ProfilePageProps) => {
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
-            <ProfileOverviewTab profile={profile} isOwnProfile={isOwnProfile} />
+            <ProfileOverviewTab profile={finalProfile} isOwnProfile={isOwnProfile} />
           </TabsContent>
 
           <TabsContent value="thoughts" className="space-y-6">
-            <UserThoughtsList userId={profile.id} />
+            <UserThoughtsList userId={finalProfile.id} />
           </TabsContent>
 
          {isOwnProfile && (
            <TabsContent value="saved" className="space-y-6">
-             <SavedThoughtsList userId={profile.id} />
+             <SavedThoughtsList userId={finalProfile.id} />
            </TabsContent>
          )}
         </Tabs>
@@ -145,7 +172,7 @@ export const ProfilePage = ({ userId }: ProfilePageProps) => {
         <EditProfileModal
           isOpen={showEditModal}
           onClose={() => setShowEditModal(false)}
-          profile={profile}
+          profile={finalProfile}
           onProfileUpdated={() => {}}
         />
       </div>

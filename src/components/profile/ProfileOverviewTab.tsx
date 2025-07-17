@@ -32,6 +32,8 @@ export const ProfileOverviewTab = ({ profile, isOwnProfile }: ProfileOverviewTab
     university: profile?.college_name || '',
     major: profile?.major || '',
   });
+  const [canEditInterests, setCanEditInterests] = useState(true);
+  const [lastInterestsUpdate, setLastInterestsUpdate] = useState<Date | null>(null);
 
   const majorLocked = Boolean(profile?.major);
 
@@ -47,6 +49,17 @@ export const ProfileOverviewTab = ({ profile, isOwnProfile }: ProfileOverviewTab
     });
     setHasUnsavedChanges(false);
   }, [profile]);
+
+  useEffect(() => {
+    if (profile?.last_interests_update) {
+      const lastUpdate = new Date(profile.last_interests_update);
+      setLastInterestsUpdate(lastUpdate);
+      setCanEditInterests((Date.now() - lastUpdate.getTime()) > 14 * 24 * 60 * 60 * 1000);
+    } else {
+      setCanEditInterests(true);
+      setLastInterestsUpdate(null);
+    }
+  }, [profile?.last_interests_update]);
 
   const saveAllChanges = async () => {
     if (!user?.id) return;
@@ -218,10 +231,17 @@ export const ProfileOverviewTab = ({ profile, isOwnProfile }: ProfileOverviewTab
         </CardHeader>
         <CardContent>
           {isOwnProfile ? (
-            <InterestsSelector 
-              selectedInterests={userInterests}
-              onInterestsChange={handleInterestsUpdate} 
-            />
+            <>
+              <InterestsSelector
+                selectedInterests={userInterests}
+                onInterestsChange={canEditInterests ? handleInterestsUpdate : () => {}}
+                minInterests={3}
+                maxInterests={7}
+              />
+              {!canEditInterests && (
+                <div className="text-red-500 mt-2">You can only change your interests once every 14 days.</div>
+              )}
+            </>
           ) : (
             <div className="flex flex-wrap gap-2">
               {userInterests?.length > 0 ? (

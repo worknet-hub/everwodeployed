@@ -91,7 +91,7 @@ export const EnhancedThoughtsFeed = ({ communityFilter, filter = 'public' }: Enh
           <EnhancedThoughtCard
             id={thought.id}
             content={thought.content}
-            author={thought.user}
+            author={{ ...thought.user, id: thought.user_id }}
             timestamp={thought.created_at}
             likes={thought.likes_count}
             comments={thought.comments_count}
