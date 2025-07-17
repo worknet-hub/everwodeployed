@@ -111,9 +111,13 @@ function RequireOnboarding({ children }: { children: React.ReactNode }) {
 
   if (checking) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-black">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-[#18181b] via-[#23232b] to-[#18181b] fade-in">
         <img src="/logo.webp" alt="Loading..." className="w-48 h-48 object-contain animate-pulse mb-6" style={{ maxWidth: '80vw', maxHeight: '40vh' }} />
         <span className="text-white text-lg mt-2">Checking onboarding status...</span>
+        <style>{`
+          .fade-in { animation: fadeIn 0.7s; }
+          @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        `}</style>
       </div>
     );
   }

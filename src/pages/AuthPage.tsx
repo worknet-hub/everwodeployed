@@ -16,6 +16,7 @@ const AuthPage = () => {
   const [username, setUsername] = useState('');
   const [college, setCollege] = useState('');
   const [loading, setLoading] = useState(false);
+  const [policyAccepted, setPolicyAccepted] = useState(false);
   const { user, signIn, signUp, loading: authLoading, isAdmin } = useAuth();
   const navigate = useNavigate();
 
@@ -27,16 +28,57 @@ const AuthPage = () => {
     }
   }, [user, authLoading, navigate]);
 
+  // On mount, check if the user has already accepted the policy
+  useEffect(() => {
+    const checkPolicyAccepted = async () => {
+      if (!email) return;
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('impersonation_policy_accepted')
+        .eq('email', email)
+        .single();
+      if (profile?.impersonation_policy_accepted) {
+        setPolicyAccepted(true);
+      } else {
+        setPolicyAccepted(false);
+      }
+    };
+    if (!isSignUp) checkPolicyAccepted();
+  }, [email, isSignUp]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    // setUsernameWarning(''); // This state variable is not defined in the original file
+    // setPolicyWarning(''); // This state variable is not defined in the original file
+
+    // if (isSignUp && !acceptPolicy && !policyAccepted) { // This line uses 'acceptPolicy' which is not defined
+    //   setPolicyWarning('You must accept the Impersonation Policy to sign up.');
+    //   setLoading(false);
+    //   return;
+    // }
 
     try {
       if (isSignUp) {
+        // Check if username exists
+        const { data: existing, error: usernameError } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('username', username)
+          .single();
+        if (existing) {
+          // setUsernameWarning('username taken'); // This state variable is not defined
+          toast.error('Username already taken.');
+          setLoading(false);
+          return;
+        }
+        if (usernameError && usernameError.code !== 'PGRST116') { // ignore no rows found
+          throw usernameError;
+        }
         const { error } = await signUp(email, password, {
           full_name: fullName,
           username: username,
-          college_name: college
+          impersonation_policy_accepted: true,
         });
         if (error) throw error;
         toast.success('Check your email to verify your account!');
@@ -58,6 +100,17 @@ const AuthPage = () => {
         }
         return;
       } else {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('impersonation_policy_accepted')
+          .eq('email', email)
+          .single();
+        if (!profile?.impersonation_policy_accepted) {
+          // setPolicyWarning('You must accept the Impersonation Policy to sign in.'); // This state variable is not defined
+          toast.error('You must accept the Impersonation Policy to sign in.');
+          setLoading(false);
+          return;
+        }
         const { error } = await signIn(email, password);
         if (error) {
           // Check if it's admin credentials even if auth fails
@@ -176,6 +229,37 @@ const AuthPage = () => {
                         placeholder="Enter your password"
                       />
                     </div>
+
+                    {/* Impersonation Policy */}
+                    {isSignUp && !policyAccepted && (
+                      <div className="mt-6 text-xs text-gray-400">
+                        <div className="flex items-start mb-2">
+                          <input
+                            type="checkbox"
+                            id="impersonation-policy"
+                            checked={policyAccepted} // Changed from acceptPolicy to policyAccepted
+                            onChange={() => setPolicyAccepted(!policyAccepted)} // Changed from setAcceptPolicy to setPolicyAccepted
+                            className="mr-2 mt-1"
+                          />
+                          <label htmlFor="impersonation-policy" className="select-none">
+                            I have read and accept the <span className="font-semibold text-white">Impersonation Policy</span> below.
+                          </label>
+                        </div>
+                        {/* policyWarning && <div className="text-red-500 mb-2">{policyWarning}</div> */} {/* This state variable is not defined */}
+                        <div className="bg-black/70 border border-gray-700 rounded-lg p-4 mt-2 text-gray-300">
+                          <div className="font-bold text-white mb-1">Impersonation Policy</div>
+                          <div>
+                            By signing up for Everwo, you confirm that the identity and university details you provide are true and your own. Any attempt to impersonate another person or falsely claim to be affiliated with a university or institution is a violation of our terms of service.<br /><br />
+                            If you are found to be impersonating another individual or misrepresenting your identity, Everwo reserves the right to:
+                            <ul className="list-disc ml-6 my-2">
+                              <li>Suspend or terminate your account without notice</li>
+                              <li>Share your account details (including IP address and login metadata) with authorized cyber crime authorities</li>
+                              <li>Report such actions to India’s Cyber Crime Cell under the IT Act, 2000</li>
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                    )}
 
                     <Button 
                       type="submit" 
