@@ -564,7 +564,7 @@ export const ConnectionsView = () => {
                         <div key={profile.id} className="relative flex flex-col items-center gap-2 p-6 bg-black/40 rounded-xl border border-white/10 shadow-md">
                           {/* College badge at top right */}
                           {profile.college_name && (
-                            <div className="absolute top-4 right-4 px-3 py-1 rounded-full bg-blue-900 text-white text-xs font-semibold tracking-wide">
+                            <div className="absolute top-4 right-2 px-2 py-0.5 rounded-full bg-blue-900 text-white text-[10px] font-semibold tracking-wide">
                               {profile.college_name}
                             </div>
                           )}
