@@ -139,6 +139,7 @@ export const OnboardingContainer = () => {
 
       toast.success('Welcome to Everwo! 🎉');
       navigate('/');
+      window.location.reload();
     } catch (error: any) {
       console.error('Error completing onboarding:', error);
       toast.error('Failed to complete setup');
