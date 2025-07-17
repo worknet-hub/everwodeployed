@@ -85,6 +85,8 @@ export default function UserThoughtsList({ userId }: UserThoughtsListProps) {
           comments={thought.comments_count || 0}
           tags={thought.tags}
           image={thought.image_url}
+          canDelete={true}
+          onDelete={() => fetchUserThoughts(true)}
         />
       </div>
     );

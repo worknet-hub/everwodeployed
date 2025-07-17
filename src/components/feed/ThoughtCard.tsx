@@ -17,6 +17,8 @@ import {
 import { useSavedThoughts } from '@/hooks/useSavedThoughts';
 import { useRealtime } from '@/hooks/useRealtime';
 import dayjs from 'dayjs';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ThoughtCardProps {
   id: string;
@@ -33,6 +35,8 @@ interface ThoughtCardProps {
   comments: number;
   tags?: string[];
   image?: string;
+  canDelete?: boolean;
+  onDelete?: () => void;
 }
 
 const ThoughtCard = ({ 
@@ -43,7 +47,9 @@ const ThoughtCard = ({
   likes, 
   comments, 
   tags = [],
-  image 
+  image,
+  canDelete = false,
+  onDelete
 }: ThoughtCardProps) => {
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(likes);
@@ -82,6 +88,14 @@ const ThoughtCard = ({
 
   const navigate = useNavigate();
 
+  const [deleting, setDeleting] = useState(false);
+  const handleDelete = async () => {
+    setDeleting(true);
+    const { error } = await supabase.from('thoughts').delete().eq('id', id);
+    setDeleting(false);
+    if (!error && onDelete) onDelete();
+  };
+
   // Defensive fallback for author
   const safeAuthor = author || { name: 'Anonymous', avatar: '', college: '', verified: false, username: '' };
 
@@ -114,7 +128,26 @@ const ThoughtCard = ({
                   </Avatar>
                 </div>
                 <span className="font-semibold text-foreground text-sm md:text-base cursor-pointer" onClick={() => navigate(`/profile/${safeAuthor.id}`)}>{safeAuthor.username}</span>
-                <span className="text-[10px] md:text-xs text-gray-400 group-hover:text-gray-300 transition-colors">{dayjs(timestamp).format('MMM DD, YYYY, hh:mm A')}</span>
+                {/* Three dots dropdown for delete, right beside username */}
+                {canDelete && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="w-8 h-8 glass hover:glass-bright text-gray-300 hover:text-white transition-all duration-300 hover:scale-110"
+                        disabled={deleting}
+                      >
+                        <MoreHorizontal className="w-4 h-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={handleDelete} className="text-destructive focus:text-destructive">
+                        {deleting ? 'Deleting...' : 'Delete'}
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
               </div>
             ) : (
               <>
@@ -124,7 +157,7 @@ const ThoughtCard = ({
                     <User className="w-6 h-6 text-gray-300" />
                   </AvatarFallback>
                 </Avatar>
-                <div className="space-y-0.5 md:space-y-1">
+                <div className="space-y-0.5 md:space-y-1 flex items-center">
                   <div className="flex items-center space-x-1 md:space-x-2">
                     <span className="font-semibold text-white group-hover:text-gray-200 transition-colors duration-300 text-sm md:text-lg">Anonymous</span>
                     <span className="hidden md:inline">
@@ -132,23 +165,33 @@ const ThoughtCard = ({
                         <Verified className="w-4 h-4 text-white fill-current animate-pulse-glow" />
                       )}
                     </span>
+                    {/* Three dots dropdown for delete, right beside Anonymous */}
+                    {canDelete && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="w-8 h-8 glass hover:glass-bright text-gray-300 hover:text-white transition-all duration-300 hover:scale-110"
+                            disabled={deleting}
+                          >
+                            <MoreHorizontal className="w-4 h-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={handleDelete} className="text-destructive focus:text-destructive">
+                            {deleting ? 'Deleting...' : 'Delete'}
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
                   </div>
                   <p className="hidden md:block text-xs text-gray-300 group-hover:text-gray-200 transition-colors">{safeAuthor?.college}</p>
-                  <p className="text-[10px] md:text-xs text-gray-400 group-hover:text-gray-300 transition-colors">{dayjs(timestamp).format('MMM DD, YYYY, hh:mm A')}</p>
                 </div>
               </>
             )}
           </div>
-          {/* Three dots button vertically aligned with avatar, right side */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="w-8 h-8 glass hover:glass-bright text-gray-300 hover:text-white transition-all duration-300 hover:scale-110"
-          >
-            <MoreHorizontal className="w-4 h-4" />
-          </Button>
         </div>
-
         {/* Content */}
         <div className="space-y-2 md:space-y-4">
           <div className="text-white leading-relaxed group-hover:text-gray-100 transition-colors text-sm md:text-lg break-words line-clamp-3 md:line-clamp-none">{content}</div>
@@ -176,9 +219,8 @@ const ThoughtCard = ({
             </div>
           )}
         </div>
-
         {/* Actions */}
-        <div className="flex items-center justify-between pt-3 md:pt-4 border-t border-white/10 group-hover:border-white/20 transition-colors">
+        <div className="flex flex-col items-start pt-3 md:pt-4 border-t border-white/10 group-hover:border-white/20 transition-colors">
           <div className="flex items-center space-x-4 md:space-x-6">
             <Button
               variant="ghost"
@@ -210,8 +252,9 @@ const ThoughtCard = ({
               </Button>
             </span>
           </div>
-          <div className="hidden md:block text-xs text-gray-400 group-hover:text-gray-300 transition-colors">
-            {Math.floor(Math.random() * 100) + 1} views
+          {/* Timestamp below actions */}
+          <div className="mt-1 text-[10px] md:text-xs text-gray-400 group-hover:text-gray-300 transition-colors">
+            {dayjs(timestamp).format('MMM DD, YYYY, hh:mm A')}
           </div>
         </div>
       </CardContent>

@@ -69,7 +69,8 @@ export const useRealtimeNotifications = () => {
           table: 'notifications',
           filter: `user_id=eq.${user.id}`
         },
-        () => {
+        (payload) => {
+          if (!payload) return;
           fetchNotifications();
         }
       )

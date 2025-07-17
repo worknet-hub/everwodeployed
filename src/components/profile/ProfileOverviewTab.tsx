@@ -171,8 +171,12 @@ export const ProfileOverviewTab = ({ profile, isOwnProfile }: ProfileOverviewTab
                     onChange={(e) => handleFieldChange('university', e.target.value)}
                     placeholder="University"
                     className="flex-1 profile-input"
+                    disabled={!!editableFields.university}
                   />
                 </div>
+                {editableFields.university && (
+                  <div className="text-xs text-red-400 mb-1 ml-8">Your college is locked and cannot be changed.</div>
+                )}
                 <div className="flex items-center space-x-2">
                   <Award className="w-4 h-4 text-muted-foreground" />
                   <Input
@@ -222,7 +226,7 @@ export const ProfileOverviewTab = ({ profile, isOwnProfile }: ProfileOverviewTab
             <div className="flex flex-wrap gap-2">
               {userInterests?.length > 0 ? (
                 userInterests.map((interest: string) => (
-                  <Badge key={interest} className="bg-blue-600/80 text-white border-none shadow-md px-3 py-1 text-base font-semibold">
+                  <Badge key={interest} className="bg-blue-600/80 text-white border-none shadow-md px-2 py-0.5 text-xs md:px-3 md:py-1 md:text-base font-semibold">
                     {interest}
                   </Badge>
                 ))

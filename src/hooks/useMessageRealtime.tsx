@@ -49,6 +49,7 @@ export const useMessageRealtime = ({
           table: 'messages'
         },
         async (payload) => {
+          if (!payload || !payload.new) return;
           console.log('Realtime payload received:', payload);
           const newMessage = payload.new as any;
 
@@ -132,6 +133,7 @@ export const useMessageRealtime = ({
           table: 'messages'
         },
         async (payload) => {
+          if (!payload || !payload.new) return;
           console.log('Message updated via realtime:', payload);
           const updatedMessage = payload.new as Message;
 

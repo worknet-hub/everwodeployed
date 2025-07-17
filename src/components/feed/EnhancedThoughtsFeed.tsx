@@ -1,9 +1,8 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useRealtime } from '@/hooks/useRealtime';
 import { EnhancedThoughtCard } from './EnhancedThoughtCard';
-import { useRealtimeLikes } from '@/hooks/useRealtimeLikes';
 import { useRealtimeThoughts } from "@/contexts/RealtimeThoughtsContext";
 
 interface Thought {
@@ -31,11 +30,30 @@ interface EnhancedThoughtsFeedProps {
 }
 
 export const EnhancedThoughtsFeed = ({ communityFilter, filter = 'public' }: EnhancedThoughtsFeedProps) => {
-  const { thoughts } = useRealtimeThoughts();
+  const { thoughts, likes, toggleLike } = useRealtimeThoughts();
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [connectionIds, setConnectionIds] = useState<string[]>([]);
   const userCollege = user?.user_metadata?.college_name || user?.user_metadata?.college || user?.college_name || user?.college || '';
+
+  // Filter thoughts by community if needed
+  let filteredThoughts = communityFilter
+    ? thoughts.filter((t: any) => t.community_name === communityFilter)
+    : thoughts;
+
+  // Further filter by friends if needed
+  if (filter === 'friends' && user) {
+    filteredThoughts = filteredThoughts.filter((t: any) =>
+      connectionIds.includes(t.user_id) || t.user_id === user.id
+    );
+  }
+  // Filter by university if needed
+  if (filter === 'uni' && userCollege) {
+    filteredThoughts = filteredThoughts.filter((t: any) => t.user.college && t.user.college.toLowerCase() === userCollege.toLowerCase());
+  }
+
+  // Gather all thought IDs for realtime likes (must be before any return)
+  const thoughtIds = useMemo(() => filteredThoughts.map((t: any) => t.id), [filteredThoughts]);
 
   useEffect(() => {
     const fetchConnections = async () => {
@@ -57,22 +75,6 @@ export const EnhancedThoughtsFeed = ({ communityFilter, filter = 'public' }: Enh
     };
     fetchConnections();
   }, [filter, user]);
-
-  // Filter thoughts by community if needed
-  let filteredThoughts = communityFilter
-    ? thoughts.filter((t: any) => t.community_name === communityFilter)
-    : thoughts;
-
-  // Further filter by friends if needed
-  if (filter === 'friends' && user) {
-    filteredThoughts = filteredThoughts.filter((t: any) =>
-      connectionIds.includes(t.user_id) || t.user_id === user.id
-    );
-  }
-  // Filter by university if needed
-  if (filter === 'uni' && userCollege) {
-    filteredThoughts = filteredThoughts.filter((t: any) => t.user.college && t.user.college.toLowerCase() === userCollege.toLowerCase());
-  }
 
   useEffect(() => {
     setLoading(false);
@@ -98,8 +100,9 @@ export const EnhancedThoughtsFeed = ({ communityFilter, filter = 'public' }: Enh
             replies={thought.replies}
             onReplyPosted={() => {}}
             userId={thought.user_id}
-            isLiked={false}
-            onToggleLike={() => {}}
+            isLiked={likes[thought.id]?.isLiked ?? false}
+            onToggleLike={() => toggleLike(thought.id)}
+            likeCount={likes[thought.id]?.count ?? thought.likes_count}
             visibility={thought.visibility}
           />
           {/* Faint white line between thoughts, except after last */}

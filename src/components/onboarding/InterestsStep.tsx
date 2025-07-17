@@ -133,7 +133,7 @@ export const InterestsStep = ({ data, onUpdate, onNext, onPrevious }: InterestsS
             <p className="text-sm text-gray-600 mb-2">Your interests:</p>
             <div className="flex flex-wrap gap-2">
               {data.interests.map((interest, index) => (
-                <Badge key={index} variant="secondary" className="cursor-pointer" onClick={() => removeInterest(interest)}>
+                <Badge key={index} variant="secondary" className="cursor-pointer text-xs px-2 py-0.5 md:text-base md:px-3 md:py-1" onClick={() => removeInterest(interest)}>
                   {interest} ×
                 </Badge>
               ))}
@@ -146,7 +146,7 @@ export const InterestsStep = ({ data, onUpdate, onNext, onPrevious }: InterestsS
           <p className="text-sm text-gray-600 mb-2">Suggested interests:</p>
           <div className="flex flex-wrap gap-2">
             {suggestedInterests.filter(interest => !data.interests.includes(interest)).map((interest, index) => (
-              <Badge key={index} variant="outline" className="cursor-pointer" onClick={() => addInterest(interest)}>
+              <Badge key={index} variant="outline" className="cursor-pointer text-xs px-2 py-0.5 md:text-base md:px-3 md:py-1" onClick={() => addInterest(interest)}>
                 + {interest}
               </Badge>
             ))}

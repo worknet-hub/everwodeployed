@@ -48,6 +48,7 @@ export const RealtimeProfileProvider = ({ children }: { children: ReactNode }) =
     table: "profiles",
     onUpdate: (event) => {
       try {
+        if (!event) return;
         fetchProfiles();
       } catch (err) {
         console.error('Global error in onUpdate-profile:', err, event);

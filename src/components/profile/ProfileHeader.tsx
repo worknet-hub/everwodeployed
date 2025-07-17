@@ -296,7 +296,7 @@ export const ProfileHeader = ({ profile, isOwnProfile, onEditClick, onAvatarChan
               </button>
             )}
             {profile.college_verified && (
-              <Verified className="w-6 h-6 text-white" />
+              <Verified className="w-4 h-4 md:w-6 md:h-6 text-white" />
             )}
           </div>
           {/* Remove old likes display below username */}
@@ -308,7 +308,7 @@ export const ProfileHeader = ({ profile, isOwnProfile, onEditClick, onAvatarChan
 
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-1">
-              <GraduationCap className="w-4 h-4 text-muted-foreground" />
+              <GraduationCap className="w-3 h-3 md:w-4 md:h-4 text-muted-foreground" />
               <span className="text-muted-foreground">{displayCollege}</span>
             </div>
           </div>

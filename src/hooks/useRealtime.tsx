@@ -26,8 +26,9 @@ export const useRealtime = ({ table, event = '*', filter, onUpdate }: UseRealtim
       isSubscribedRef.current = false;
     }
 
-    // Use a stable channel name based on table, event, and filter
-    const channelName = filter ? `${table}-${event}-${filter}` : `${table}-${event}`;
+    // Use a unique channel name based on table, event, filter, and a unique id
+    const uniqueId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const channelName = filter ? `${table}-${event}-${filter}-${uniqueId}` : `${table}-${event}-${uniqueId}`;
 
     const changesFilter: RealtimePostgresChangesFilter<`${REALTIME_POSTGRES_CHANGES_LISTEN_EVENT}`> = {
       event,
@@ -36,12 +37,6 @@ export const useRealtime = ({ table, event = '*', filter, onUpdate }: UseRealtim
     };
     if (filter) {
       changesFilter.filter = filter;
-    }
-
-    // Prevent multiple subscriptions to the same channel instance
-    if (channelRef.current && isSubscribedRef.current) {
-      console.warn('Tried to subscribe multiple times to the same channel instance. Skipping.');
-      return;
     }
 
     try {

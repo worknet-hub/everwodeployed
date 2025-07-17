@@ -177,7 +177,7 @@ export const OnboardingContainer = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 overflow-hidden">
+    <div className="min-h-screen bg-gray-950 overflow-hidden pb-24 md:pb-0">
       {/* PWA Recommendation Dialog */}
       <Dialog open={showPWADialog} onOpenChange={setShowPWADialog}>
         <DialogContent className="max-w-lg w-full p-0 overflow-hidden">

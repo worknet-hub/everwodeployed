@@ -60,7 +60,8 @@ export const useRealtimeLikes = (thoughtIds: string[]) => {
     }
 
     // Create new channel with unique name
-    const channelName = `likes_${thoughtIds.join('_')}_${Date.now()}`;
+    const uniqueId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const channelName = `likes_${thoughtIds.join('_')}_${uniqueId}`;
     const channel = supabase
       .channel(channelName)
       .on(
@@ -71,7 +72,8 @@ export const useRealtimeLikes = (thoughtIds: string[]) => {
           table: 'thought_likes',
           filter: `thought_id=in.(${thoughtIds.join(',')})`
         },
-        () => {
+        (payload) => {
+          if (!payload) return;
           fetchLikes();
         }
       )
@@ -83,7 +85,8 @@ export const useRealtimeLikes = (thoughtIds: string[]) => {
           table: 'thoughts',
           filter: `id=in.(${thoughtIds.join(',')})`
         },
-        () => {
+        (payload) => {
+          if (!payload) return;
           fetchLikes();
         }
       )

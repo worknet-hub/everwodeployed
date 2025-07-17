@@ -117,7 +117,7 @@ export const InterestsSelector = ({
         {/* Selected interests as chips */}
         <div className="flex flex-wrap gap-2 mt-2">
           {selectedInterests.map((interest) => (
-            <Badge key={interest} variant="secondary" className="flex items-center gap-1">
+            <Badge key={interest} variant="secondary" className="flex items-center gap-1 text-xs px-2 py-0.5 md:text-base md:px-3 md:py-1">
               {interest}
               <button
                 type="button"
