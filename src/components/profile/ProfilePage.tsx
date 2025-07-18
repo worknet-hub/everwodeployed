@@ -129,17 +129,7 @@ export const ProfilePage = ({ profileId }: ProfilePageProps) => {
       <div className="w-full max-w-6xl mx-auto px-0 sm:px-6 space-y-6 pb-24 flex flex-col items-center">
         {/* Header */}
         <div className="w-full relative">
-          {/* Three dots menu: absolute on desktop only */}
-          <div className="hidden md:block absolute left-0 top-0 z-20">
-            <ProfileHeader 
-              profile={finalProfile} 
-              isOwnProfile={isOwnProfile} 
-              onEditClick={() => setShowEditModal(true)}
-              onAvatarChange={isOwnProfile ? handleAvatarChange : undefined}
-              connections={connections}
-              showMenuOnly
-            />
-          </div>
+          {/* Removed duplicate ProfileHeader in md:block absolute left-0 top-0 z-20 */}
           <Card className="shadow-none border-0">
             <CardContent className="p-8 pt-8 md:pt-12">
               <ProfileHeader 
