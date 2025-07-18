@@ -8,12 +8,17 @@ import { MessageInput } from './MessageInput';
 import { ConnectionWarning } from './ConnectionWarning';
 import { ReplyPreview } from './ReplyPreview';
 import { Message, Conversation } from '@/types/messages';
+import { supabase } from '@/integrations/supabase/client';
+import { useState } from 'react';
+import { toast } from 'sonner';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 interface ChatAreaProps {
   selectedConversation: string | null;
   selectedUser: Conversation | undefined;
   messages: Message[];
+  setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
   newMessage: string;
   currentUserId?: string;
   isConnected: boolean;
@@ -32,6 +37,7 @@ export const ChatArea = ({
   selectedConversation,
   selectedUser,
   messages,
+  setMessages,
   newMessage,
   currentUserId,
   isConnected,
@@ -50,6 +56,10 @@ export const ChatArea = ({
   // Ref for the scrollable messages area
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [editingMessage, setEditingMessage] = useState<Message | null>(null);
+  const [editContent, setEditContent] = useState('');
+  const [deletedMessage, setDeletedMessage] = useState<Message | null>(null);
+  const [undoTimeout, setUndoTimeout] = useState<NodeJS.Timeout | null>(null);
 
   // Scroll only the messages area to bottom when messages change
   useEffect(() => {
@@ -57,6 +67,41 @@ export const ChatArea = ({
       messagesEndRef.current.scrollIntoView({ behavior: 'auto' });
     }
   }, [messages]);
+
+  // Delete message handler
+  const handleDeleteMessage = async (messageId: string) => {
+    // Remove from UI immediately
+    setMessages((prev: Message[]) => prev.filter((msg) => msg.id !== messageId));
+    // Delete from backend immediately
+    const { error } = await supabase.from('messages').delete().eq('id', messageId);
+    if (error) {
+      toast.error('Failed to delete message');
+      // Optionally, restore the message in the UI if deletion fails
+    }
+  };
+
+  // Edit message handler
+  const handleEditMessage = (message: Message) => {
+    setEditingMessage(message);
+    setEditContent(message.content);
+  };
+
+  const handleEditSave = async () => {
+    if (!editingMessage) return;
+    // Update in backend
+    await supabase.from('messages').update({ content: editContent }).eq('id', editingMessage.id);
+    // Update in UI
+    if (typeof setMessages === 'function') {
+      setMessages((prev: Message[]) => prev.map((msg) => msg.id === editingMessage.id ? { ...msg, content: editContent } : msg));
+    }
+    setEditingMessage(null);
+    setEditContent('');
+  };
+
+  const handleEditCancel = () => {
+    setEditingMessage(null);
+    setEditContent('');
+  };
 
   if (!selectedConversation) {
     return (
@@ -110,6 +155,8 @@ export const ChatArea = ({
             onLoadOlderMessages={onLoadOlderMessages}
             hasMoreMessages={hasMoreMessages}
             isLoadingOlder={isLoadingOlder}
+            onDelete={handleDeleteMessage}
+            onEdit={handleEditMessage}
           />
           <div ref={messagesEndRef} />
         </div>
@@ -128,6 +175,26 @@ export const ChatArea = ({
         />
         {/* Black area below message input on mobile */}
       </div>
+      {/* Edit message dialog */}
+      {editingMessage && (
+        <Dialog open={!!editingMessage} onOpenChange={handleEditCancel}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Edit Message</DialogTitle>
+            </DialogHeader>
+            <textarea
+              className="w-full rounded border p-2 min-h-[60px]"
+              value={editContent}
+              onChange={e => setEditContent(e.target.value)}
+              maxLength={1000}
+            />
+            <div className="flex justify-end gap-2 mt-4">
+              <Button variant="outline" onClick={handleEditCancel}>Cancel</Button>
+              <Button onClick={handleEditSave}>Save</Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 };

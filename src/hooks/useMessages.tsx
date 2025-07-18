@@ -168,6 +168,67 @@ export const useMessages = (userId?: string) => {
     }
   };
 
+  // Add this function to handle reactions
+  const reactToMessage = async (messageId: string, emoji: string, userId: string) => {
+    try {
+      // Check if the reaction already exists
+      const { data: existing, error: fetchError } = await supabase
+        .from('reply_reactions')
+        .select('id')
+        .eq('message_id', messageId)
+        .eq('user_id', userId)
+        .eq('emoji', emoji)
+        .single();
+      if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116: No rows found
+        console.error('Error checking existing reaction:', fetchError);
+        toast.error('Failed to add reaction');
+        return false;
+      }
+      if (existing) {
+        // Reaction exists, so remove it (toggle off)
+        const { error: deleteError } = await supabase
+          .from('reply_reactions')
+          .delete()
+          .eq('id', existing.id);
+        if (deleteError) {
+          console.error('Error removing reaction:', deleteError);
+          toast.error('Failed to remove reaction');
+          return false;
+        }
+        // Update UI: remove the reaction with matching user_id and emoji
+        setMessages(prev => prev.map(msg =>
+          msg.id === messageId
+            ? { ...msg, reactions: (msg.reactions || []).filter(r => !(r.emoji === emoji && r.user_id === userId)) }
+            : msg
+        ));
+        return true;
+      } else {
+        // Reaction does not exist, so insert it
+        const { data, error } = await supabase.from('reply_reactions').insert({
+          message_id: messageId,
+          emoji,
+          user_id: userId,
+        }).select('*').single();
+        if (error) {
+          console.error('Error inserting reaction:', JSON.stringify(error, null, 2));
+          toast.error('Failed to add reaction');
+          return false;
+        }
+        // Update UI: add the full MessageReaction object
+        setMessages(prev => prev.map(msg =>
+          msg.id === messageId
+            ? { ...msg, reactions: [...(msg.reactions || []), data] }
+            : msg
+        ));
+        return true;
+      }
+    } catch (err) {
+      console.error('Error reacting to message:', err);
+      toast.error('Failed to add reaction');
+      return false;
+    }
+  };
+
   return {
     messages,
     setMessages,
@@ -175,6 +236,7 @@ export const useMessages = (userId?: string) => {
     sendMessage,
     loadOlderMessages,
     hasMoreMessages,
-    isLoadingOlder
+    isLoadingOlder,
+    reactToMessage, // Export the new function
   };
 };

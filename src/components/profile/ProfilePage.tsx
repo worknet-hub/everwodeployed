@@ -126,25 +126,39 @@ export const ProfilePage = ({ profileId }: ProfilePageProps) => {
         </div>
       </header>
 
-      <div className="max-w-6xl mx-auto p-6 space-y-6 pb-24">
+      <div className="w-full max-w-6xl mx-auto px-0 sm:px-6 space-y-6 pb-24 flex flex-col items-center">
         {/* Header */}
-        <Card className="shadow-none border-0">
-          <CardContent className="p-8">
+        <div className="w-full relative">
+          {/* Three dots menu: absolute on desktop only */}
+          <div className="hidden md:block absolute left-0 top-0 z-20">
             <ProfileHeader 
               profile={finalProfile} 
               isOwnProfile={isOwnProfile} 
               onEditClick={() => setShowEditModal(true)}
               onAvatarChange={isOwnProfile ? handleAvatarChange : undefined}
               connections={connections}
+              showMenuOnly
             />
-            {/* Start Onboarding Button - now visible to everyone */}
-            <div className="mt-4 flex justify-end">
-              <Button onClick={() => navigate('/onboarding')} className="bg-gradient-to-r from-emerald-400 to-blue-500 text-white font-semibold px-6 py-2 rounded-xl shadow-md">
-                Start Onboarding
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+          </div>
+          <Card className="shadow-none border-0">
+            <CardContent className="p-8 pt-8 md:pt-12">
+              <ProfileHeader 
+                profile={finalProfile} 
+                isOwnProfile={isOwnProfile} 
+                onEditClick={() => setShowEditModal(true)}
+                onAvatarChange={isOwnProfile ? handleAvatarChange : undefined}
+                connections={connections}
+                hideMenu
+              />
+              {/* Start Onboarding Button - now visible to everyone */}
+              <div className="mt-4 flex justify-end">
+                <Button onClick={() => navigate('/onboarding')} className="bg-gradient-to-r from-emerald-400 to-blue-500 text-white font-semibold px-6 py-2 rounded-xl shadow-md">
+                  Start Onboarding
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Content Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>

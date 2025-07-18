@@ -47,9 +47,11 @@ interface ProfileHeaderProps {
   onEditClick: () => void;
   onAvatarChange?: (newAvatarUrl: string) => void;
   connections?: any[];
+  showMenuOnly?: boolean;
+  hideMenu?: boolean;
 }
 
-export const ProfileHeader = ({ profile, isOwnProfile, onEditClick, onAvatarChange, connections = [] }: ProfileHeaderProps) => {
+export const ProfileHeader = ({ profile, isOwnProfile, onEditClick, onAvatarChange, connections = [], showMenuOnly = false, hideMenu = false }: ProfileHeaderProps) => {
   if (!profile || !profile.id) return null;
   const { user } = useAuth();
   const { fetchConnections } = useRealtimeProfile();
@@ -216,6 +218,44 @@ export const ProfileHeader = ({ profile, isOwnProfile, onEditClick, onAvatarChan
   const displayCollege = profile.college_name || 'College not set';
   const displayBio = profile.bio || 'No bio available';
 
+  if (showMenuOnly && !isOwnProfile && !hideMenu) {
+    // Render only the three dots menu (for top left)
+    return (
+      <div className="relative">
+        <button
+          className="p-2 rounded-full hover:bg-white/10 focus:outline-none ml-2"
+          onClick={() => setReportOpen((v) => !v)}
+          aria-label="More options"
+        >
+          <MoreVertical className="w-6 h-6 text-white" />
+        </button>
+        {reportOpen && (
+          <div
+            ref={dropdownRef}
+            className="absolute left-0 mt-2 w-80 backdrop-blur-lg bg-black/60 rounded-xl shadow-2xl p-4 z-50 border border-white/20"
+            style={{ minWidth: 260 }}
+          >
+            <button
+              className="w-full text-left text-red-600 font-semibold py-2 px-3 rounded hover:bg-red-50/30 focus:outline-none"
+              onClick={() => setShowReasonBox((v) => !v)}
+            >
+              Report
+            </button>
+            {showReasonBox && (
+              <textarea
+                className="w-full rounded-xl bg-white/20 text-white text-sm p-4 min-h-[60px] border border-white/20 focus:outline-none focus:ring-2 focus:ring-red-400 placeholder:text-gray-300 mt-3 shadow-lg backdrop-blur"
+                placeholder="Why are you reporting this user? (optional)"
+                value={reportReason}
+                onChange={e => setReportReason(e.target.value)}
+                maxLength={300}
+              />
+            )}
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0 md:space-x-6 relative">
       {/* Left: Avatar and Stats */}
@@ -253,38 +293,9 @@ export const ProfileHeader = ({ profile, isOwnProfile, onEditClick, onAvatarChan
           <div className="flex items-center space-x-3">
             <h1 className="text-3xl font-bold">{displayUsername}</h1>
             {/* Three-dot menu for reporting (desktop only) */}
-            {!isOwnProfile && (
+            {!isOwnProfile && !hideMenu && false && (
               <div className="hidden md:block relative">
-                <button
-                  className="p-2 rounded-full hover:bg-white/10 focus:outline-none ml-2"
-                  onClick={() => setReportOpen((v) => !v)}
-                  aria-label="More options"
-                >
-                  <MoreVertical className="w-6 h-6 text-white" />
-                </button>
-                {reportOpen && (
-                  <div
-                    ref={dropdownRef}
-                    className="absolute right-0 mt-2 w-80 backdrop-blur-lg bg-black/60 rounded-xl shadow-2xl p-4 z-50 border border-white/20"
-                    style={{ minWidth: 260 }}
-                  >
-                    <button
-                      className="w-full text-left text-red-600 font-semibold py-2 px-3 rounded hover:bg-red-50/30 focus:outline-none"
-                      onClick={() => setShowReasonBox((v) => !v)}
-                    >
-                      Report
-                    </button>
-                    {showReasonBox && (
-                      <textarea
-                        className="w-full rounded-xl bg-white/20 text-white text-sm p-4 min-h-[60px] border border-white/20 focus:outline-none focus:ring-2 focus:ring-red-400 placeholder:text-gray-300 mt-3 shadow-lg backdrop-blur"
-                        placeholder="Why are you reporting this user? (optional)"
-                        value={reportReason}
-                        onChange={e => setReportReason(e.target.value)}
-                        maxLength={300}
-                      />
-                    )}
-                  </div>
-                )}
+                {/* This is now handled by showMenuOnly at the top left */}
               </div>
             )}
             {isOwnProfile && (
@@ -350,39 +361,7 @@ export const ProfileHeader = ({ profile, isOwnProfile, onEditClick, onAvatarChan
               <MessageCircle className="w-4 h-4 mr-2" />
               Message
             </Button>
-            {/* Three-dot menu for reporting (mobile only) */}
-            <div className="relative md:hidden">
-              <button
-                className="p-2 rounded-full hover:bg-white/10 focus:outline-none ml-2"
-                onClick={() => setReportOpen((v) => !v)}
-                aria-label="More options"
-              >
-                <MoreVertical className="w-6 h-6 text-white" />
-              </button>
-              {reportOpen && (
-                <div
-                  ref={dropdownRef}
-                  className="absolute right-0 mt-2 w-80 backdrop-blur-lg bg-black/60 rounded-xl shadow-2xl p-4 z-50 border border-white/20"
-                  style={{ minWidth: 260 }}
-                >
-                  <button
-                    className="w-full text-left text-red-600 font-semibold py-2 px-3 rounded hover:bg-red-50/30 focus:outline-none"
-                    onClick={() => setShowReasonBox((v) => !v)}
-                  >
-                    Report
-                  </button>
-                  {showReasonBox && (
-                    <textarea
-                      className="w-full rounded-xl bg-white/20 text-white text-sm p-4 min-h-[60px] border border-white/20 focus:outline-none focus:ring-2 focus:ring-red-400 placeholder:text-gray-300 mt-3 shadow-lg backdrop-blur"
-                      placeholder="Why are you reporting this user? (optional)"
-                      value={reportReason}
-                      onChange={e => setReportReason(e.target.value)}
-                      maxLength={300}
-                    />
-                  )}
-                </div>
-              )}
-            </div>
+            {/* Three-dot menu for reporting (mobile only) is now handled by showMenuOnly at the top left */}
           </>
         )}
       </div>

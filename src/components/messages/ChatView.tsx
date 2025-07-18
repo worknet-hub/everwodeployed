@@ -35,7 +35,7 @@ export const ChatView = () => {
   }, []);
 
   const { conversations, fetchConversations } = useConversations(user?.id);
-  const { messages, setMessages, fetchMessages, sendMessage, loadOlderMessages, hasMoreMessages, isLoadingOlder } = useMessages(user?.id);
+  const { messages, setMessages, fetchMessages, sendMessage, loadOlderMessages, hasMoreMessages, isLoadingOlder, reactToMessage } = useMessages(user?.id);
   const { isConnected, checkConnection } = useConnection(user?.id);
 
   // Handle initial conversation selection from navigation state
@@ -89,8 +89,7 @@ export const ChatView = () => {
 
   const handleReact = async (messageId: string, emoji: string) => {
     if (!user) return;
-    toast.success(`Reacted with ${emoji}`);
-    console.log('Reaction:', { messageId, emoji, userId: user.id });
+    await reactToMessage(messageId, emoji, user.id);
   };
 
   const handleLoadOlderMessages = () => {
@@ -164,6 +163,7 @@ export const ChatView = () => {
                 selectedConversation={selectedConversation}
                 selectedUser={selectedUser}
                 messages={messages}
+                setMessages={setMessages}
                 newMessage={newMessage}
                 currentUserId={user?.id}
                 isConnected={isConnected}
@@ -210,6 +210,7 @@ export const ChatView = () => {
           selectedConversation={selectedConversation}
           selectedUser={selectedUser}
           messages={messages}
+          setMessages={setMessages}
           newMessage={newMessage}
           currentUserId={user?.id}
           isConnected={isConnected}

@@ -15,6 +15,8 @@ interface MessagesListProps {
   onLoadOlderMessages?: () => void;
   hasMoreMessages?: boolean;
   isLoadingOlder?: boolean;
+  onDelete?: (messageId: string) => void;
+  onEdit?: (message: Message) => void;
 }
 
 export const MessagesList = ({ 
@@ -25,7 +27,9 @@ export const MessagesList = ({
   onReact,
   onLoadOlderMessages,
   hasMoreMessages = false,
-  isLoadingOlder = false
+  isLoadingOlder = false,
+  onDelete,
+  onEdit
 }: MessagesListProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isNearTop, setIsNearTop] = useState(false);
@@ -127,6 +131,8 @@ export const MessagesList = ({
                         isOwnMessage={message.sender_id === currentUserId}
                         onReply={onReply}
                         onReact={(emoji) => onReact(message.id, emoji)}
+                        onDelete={onDelete}
+                        onEdit={onEdit}
                       />
                     </div>
                   </div>
