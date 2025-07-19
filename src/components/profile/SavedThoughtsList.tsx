@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import { useEffect, useState, useCallback } from 'react';
+=======
+import { useEffect, useState } from 'react';
+>>>>>>> 600fc361db99d0afca5b5e0cecaa6e7bf7e65807
 import { supabase } from '@/integrations/supabase/client';
 import EnhancedThoughtCard from '@/components/feed/EnhancedThoughtCard';
 import { useRealtime } from '@/hooks/useRealtime';
@@ -11,8 +15,12 @@ export default function SavedThoughtsList({ userId }: SavedThoughtsListProps) {
   const [thoughts, setThoughts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
+<<<<<<< HEAD
   // Memoize fetchSavedThoughts to avoid recreating the function on every render
   const fetchSavedThoughts = useCallback(async () => {
+=======
+  const fetchSavedThoughts = async () => {
+>>>>>>> 600fc361db99d0afca5b5e0cecaa6e7bf7e65807
     if (!userId) return; // Prevent undefined userId
     const { data, error } = await supabase
       .from('saved_thoughts')
@@ -58,11 +66,19 @@ export default function SavedThoughtsList({ userId }: SavedThoughtsListProps) {
       );
     }
     setLoading(false);
+<<<<<<< HEAD
   }, [userId]);
 
   useEffect(() => {
     fetchSavedThoughts();
   }, [fetchSavedThoughts]);
+=======
+  };
+
+  useEffect(() => {
+    fetchSavedThoughts();
+  }, [userId]);
+>>>>>>> 600fc361db99d0afca5b5e0cecaa6e7bf7e65807
 
   // Real-time updates for saved thoughts
   // Removed useRealtime subscription for saved_thoughts

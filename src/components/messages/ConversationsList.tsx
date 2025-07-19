@@ -12,9 +12,12 @@ interface Conversation {
   avatar_url: string;
   last_message_content: string;
   last_message_created_at: string;
+<<<<<<< HEAD
   last_message_sender_id: string;
   last_message_read: boolean;
   current_user_id: string;
+=======
+>>>>>>> 600fc361db99d0afca5b5e0cecaa6e7bf7e65807
 }
 
 interface ConversationsListProps {
@@ -46,6 +49,7 @@ export const ConversationsList = ({
           </Button>
         </div>
       ) : (
+<<<<<<< HEAD
         conversations.map((conversation) => {
           console.log('Conversation:', conversation);
           console.log('last_message_sender_id:', conversation.last_message_sender_id, 'current_user_id:', conversation.current_user_id);
@@ -93,6 +97,33 @@ export const ConversationsList = ({
             </div>
           );
         })
+=======
+        conversations.map((conversation) => (
+          <div
+            key={conversation.partner_id}
+            className={`p-4 cursor-pointer hover:bg-muted/50 ${
+              selectedConversation === conversation.partner_id ? 'bg-muted' : ''
+            }`}
+            onClick={() => onSelectConversation(conversation.partner_id)}
+          >
+            <div className="flex items-center space-x-3">
+              <Avatar>
+                <AvatarImage src={conversation.avatar_url} />
+                <AvatarFallback>
+                  <User className="w-6 h-6 text-gray-300" />
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1 min-w-0">
+                <p className="font-medium truncate">{conversation.full_name}</p>
+                <p className="text-sm text-muted-foreground truncate">{conversation.last_message_content}</p>
+              </div>
+              <div className="text-xs text-muted-foreground">
+                {formatDistanceToNow(new Date(conversation.last_message_created_at), { addSuffix: true }).replace(/^about /, '')}
+              </div>
+            </div>
+          </div>
+        ))
+>>>>>>> 600fc361db99d0afca5b5e0cecaa6e7bf7e65807
       )}
     </ScrollArea>
   );

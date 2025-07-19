@@ -66,6 +66,15 @@ export const ChatHeader = ({ userName, userAvatar, isConnected, userId }: ChatHe
           >
             {isMuted ? 'Unmute' : 'Mute'}
           </DropdownMenuCheckboxItem>
+<<<<<<< HEAD
+=======
+          <DropdownMenuCheckboxItem
+            checked={!readReceipt}
+            onCheckedChange={() => setReadReceipt((v) => !v)}
+          >
+            Turn off read receipt
+          </DropdownMenuCheckboxItem>
+>>>>>>> 600fc361db99d0afca5b5e0cecaa6e7bf7e65807
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => setReportOpen(true)} className="text-red-600 focus:bg-red-100 focus:text-red-800">
             Report

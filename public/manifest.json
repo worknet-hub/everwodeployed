@@ -12,12 +12,20 @@
   "scope": "/",
   "icons": [
     {
+<<<<<<< HEAD
       "src": "/everwo-logo.png",
+=======
+      "src": "/everwo logo.png",
+>>>>>>> 600fc361db99d0afca5b5e0cecaa6e7bf7e65807
       "sizes": "192x192",
       "type": "image/png"
     },
     {
+<<<<<<< HEAD
       "src": "/everwo-logo.png",
+=======
+      "src": "/everwo logo.png",
+>>>>>>> 600fc361db99d0afca5b5e0cecaa6e7bf7e65807
       "sizes": "512x512",
       "type": "image/png"
     }
@@ -27,19 +35,31 @@
       "name": "Home Feed",
       "short_name": "Feed",
       "url": "/",
+<<<<<<< HEAD
       "icons": [{"src": "/everwo-logo.png", "sizes": "192x192"}]
+=======
+      "icons": [{"src": "/everwo logo.png", "sizes": "192x192"}]
+>>>>>>> 600fc361db99d0afca5b5e0cecaa6e7bf7e65807
     },
     {
       "name": "Job House",
       "short_name": "Jobs",
       "url": "/job-house",
+<<<<<<< HEAD
       "icons": [{"src": "/everwo-logo.png", "sizes": "192x192"}]
+=======
+      "icons": [{"src": "/everwo logo.png", "sizes": "192x192"}]
+>>>>>>> 600fc361db99d0afca5b5e0cecaa6e7bf7e65807
     },
     {
       "name": "Messages",
       "short_name": "Messages",
       "url": "/messages",
+<<<<<<< HEAD
       "icons": [{"src": "/everwo-logo.png", "sizes": "192x192"}]
+=======
+      "icons": [{"src": "/everwo logo.png", "sizes": "192x192"}]
+>>>>>>> 600fc361db99d0afca5b5e0cecaa6e7bf7e65807
     }
   ]
 }

@@ -41,6 +41,7 @@ export const EnhancedThoughtsFeed = ({ communityFilter, filter = 'public' }: Enh
     ? thoughts.filter((t: any) => t.community_name === communityFilter)
     : thoughts;
 
+<<<<<<< HEAD
   // Always filter out connections-only thoughts for public feed
   if (filter === 'public') {
     filteredThoughts = filteredThoughts.filter((t: any) => t.visibility === 'public');
@@ -64,6 +65,17 @@ export const EnhancedThoughtsFeed = ({ communityFilter, filter = 'public' }: Enh
       const authorCollege = (t.user.college_name || '').trim().toLowerCase();
       return authorCollege && authorCollege === normalizedUserCollege;
     });
+=======
+  // Further filter by friends if needed
+  if (filter === 'friends' && user) {
+    filteredThoughts = filteredThoughts.filter((t: any) =>
+      connectionIds.includes(t.user_id) || t.user_id === user.id
+    );
+  }
+  // Filter by university if needed
+  if (filter === 'uni' && userCollege) {
+    filteredThoughts = filteredThoughts.filter((t: any) => t.user.college && t.user.college.toLowerCase() === userCollege.toLowerCase());
+>>>>>>> 600fc361db99d0afca5b5e0cecaa6e7bf7e65807
   }
 
   // Gather all thought IDs for realtime likes (must be before any return)
