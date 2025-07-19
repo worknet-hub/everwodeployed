@@ -30,11 +30,7 @@ export const ModalThoughtComposer = ({
   const [content, setContent] = useState(initialContent);
   const [mentions, setMentions] = useState<any[]>([]);
   const [isPosting, setIsPosting] = useState(false);
-<<<<<<< HEAD
   const [visibility, setVisibility] = useState<'public' | 'connections' | 'uni'>('public');
-=======
-  const [visibility, setVisibility] = useState<'public' | 'connections'>('public');
->>>>>>> 600fc361db99d0afca5b5e0cecaa6e7bf7e65807
 
   // Load draft from localStorage on mount
   useEffect(() => {
@@ -65,11 +61,7 @@ export const ModalThoughtComposer = ({
   }, [isOpen]);
 
   const handlePost = async () => {
-<<<<<<< HEAD
     if (!content.trim() || !user || content.length > 500) return;
-=======
-    if (!content.trim() || !user) return;
->>>>>>> 600fc361db99d0afca5b5e0cecaa6e7bf7e65807
 
     setIsPosting(true);
     try {
@@ -215,19 +207,12 @@ export const ModalThoughtComposer = ({
               <select
                 id="visibility"
                 value={visibility}
-<<<<<<< HEAD
                 onChange={e => setVisibility(e.target.value as 'public' | 'connections' | 'uni')}
-=======
-                onChange={e => setVisibility(e.target.value as 'public' | 'connections')}
->>>>>>> 600fc361db99d0afca5b5e0cecaa6e7bf7e65807
                 className="custom-select rounded-full px-3 py-1 border border-white/20 focus:outline-none backdrop-blur-sm"
               >
                 <option value="public">Everyone</option>
                 <option value="connections">Connections only</option>
-<<<<<<< HEAD
                 <option value="uni">Uni-only</option>
-=======
->>>>>>> 600fc361db99d0afca5b5e0cecaa6e7bf7e65807
               </select>
             </div>
 
@@ -253,12 +238,9 @@ export const ModalThoughtComposer = ({
               <span className="text-xs text-gray-400 flex-1">
                 {content.length}/500 characters
                 {mentions.length > 0 && ` • ${mentions.length > 1 ? 's' : ''}`}
-<<<<<<< HEAD
                 {content.length > 500 && (
                   <span className="text-red-400 ml-2">Too long! Max 500 characters.</span>
                 )}
-=======
->>>>>>> 600fc361db99d0afca5b5e0cecaa6e7bf7e65807
               </span>
               <div className="flex gap-2 items-center">
                 <Button 
@@ -270,11 +252,7 @@ export const ModalThoughtComposer = ({
                 </Button>
                 <Button 
                   onClick={handlePost} 
-<<<<<<< HEAD
                   disabled={!content.trim() || isPosting || content.length > 500}
-=======
-                  disabled={!content.trim() || isPosting}
->>>>>>> 600fc361db99d0afca5b5e0cecaa6e7bf7e65807
                   className="gradient-bg"
                 >
                   {isPosting ? 'Posting...' : (parentId ? 'Reply' : 'Post')}

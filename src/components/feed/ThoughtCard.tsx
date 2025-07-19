@@ -206,11 +206,7 @@ const ThoughtCard = ({
         </div>
         {/* Content */}
         <div className="space-y-2 md:space-y-4">
-<<<<<<< HEAD
-          <div className="text-white leading-relaxed group-hover:text-gray-100 transition-colors text-sm md:text-lg break-words break-all line-clamp-3 md:line-clamp-none">{content}</div>
-=======
           <div className="text-white leading-relaxed group-hover:text-gray-100 transition-colors text-sm md:text-lg break-words line-clamp-3 md:line-clamp-none">{content}</div>
->>>>>>> 600fc361db99d0afca5b5e0cecaa6e7bf7e65807
           {tags.length > 0 && (
             <div className="flex flex-wrap gap-1 md:gap-2 mt-1 md:mt-0">
               {tags.map((tag, index) => (

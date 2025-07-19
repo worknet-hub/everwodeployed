@@ -45,11 +45,7 @@ interface ProfilePageProps {
 
 export const ProfilePage = ({ profileId }: ProfilePageProps) => {
   const { user } = useAuth();
-<<<<<<< HEAD
-  const { profiles, connections, fetchProfiles } = useRealtimeProfile();
-=======
   const { profiles, connections } = useRealtimeProfile();
->>>>>>> 600fc361db99d0afca5b5e0cecaa6e7bf7e65807
   const navigate = useNavigate();
   const [showEditModal, setShowEditModal] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
@@ -93,10 +89,6 @@ export const ProfilePage = ({ profileId }: ProfilePageProps) => {
   const handleAvatarChange = (newAvatarUrl: string) => {
     // Optionally update avatar locally for instant UI feedback
     // Real-time update will come from context
-<<<<<<< HEAD
-    if (fetchProfiles) fetchProfiles();
-=======
->>>>>>> 600fc361db99d0afca5b5e0cecaa6e7bf7e65807
   };
 
   if (!finalProfile || loadingProfile) {
@@ -148,42 +140,22 @@ export const ProfilePage = ({ profileId }: ProfilePageProps) => {
                 connections={connections}
                 hideMenu
               />
-<<<<<<< HEAD
-              {/* Start Onboarding Button - only for own profile */}
-              {isOwnProfile && (
-                <div className="mt-4 flex justify-end">
-                  <Button onClick={() => navigate('/onboarding')} className="bg-gradient-to-r from-emerald-400 to-blue-500 text-white font-semibold px-6 py-2 rounded-xl shadow-md">
-                    Start Onboarding
-                  </Button>
-                </div>
-              )}
-=======
               {/* Start Onboarding Button - now visible to everyone */}
               <div className="mt-4 flex justify-end">
                 <Button onClick={() => navigate('/onboarding')} className="bg-gradient-to-r from-emerald-400 to-blue-500 text-white font-semibold px-6 py-2 rounded-xl shadow-md">
                   Start Onboarding
                 </Button>
               </div>
->>>>>>> 600fc361db99d0afca5b5e0cecaa6e7bf7e65807
             </CardContent>
           </Card>
         </div>
 
         {/* Content Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-<<<<<<< HEAD
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="thoughts">Thoughts</TabsTrigger>
-            {isOwnProfile
-              ? <TabsTrigger value="saved">Saved</TabsTrigger>
-              : <div />}
-=======
           <TabsList className={`grid w-full grid-cols-${isOwnProfile ? '3' : '2'}`}>
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="thoughts">Thoughts</TabsTrigger>
             {isOwnProfile && <TabsTrigger value="saved">Saved</TabsTrigger>}
->>>>>>> 600fc361db99d0afca5b5e0cecaa6e7bf7e65807
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">

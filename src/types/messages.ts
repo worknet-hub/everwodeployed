@@ -32,10 +32,7 @@ export interface Conversation {
   avatar_url: string;
   last_message_content: string;
   last_message_created_at: string;
-<<<<<<< HEAD
   last_message_sender_id: string;
   last_message_read: boolean;
   current_user_id: string;
-=======
->>>>>>> 600fc361db99d0afca5b5e0cecaa6e7bf7e65807
 }

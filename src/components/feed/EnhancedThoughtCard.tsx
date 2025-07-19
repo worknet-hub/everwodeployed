@@ -441,11 +441,7 @@ export const EnhancedThoughtCard = ({
                     </span>
                   )}
 
-<<<<<<< HEAD
-                  <div className="text-foreground leading-relaxed text-sm md:text-base break-words break-all">
-=======
                   <div className="text-foreground leading-relaxed text-sm md:text-base">
->>>>>>> 600fc361db99d0afca5b5e0cecaa6e7bf7e65807
                     {renderContentWithMentions(content, mentions)}
                   </div>
 

@@ -247,7 +247,6 @@ const Index = () => {
                         </div>
                       </div>
                     )}
-<<<<<<< HEAD
                     {/* Impersonation Policy for Sign In */}
                     {!isSignUp && (
                       <div className="mt-6 text-xs text-gray-400">
@@ -278,8 +277,6 @@ const Index = () => {
                         </div>
                       </div>
                     )}
-=======
->>>>>>> 600fc361db99d0afca5b5e0cecaa6e7bf7e65807
 
                     {/* Move Create Account button below policy */}
                     {isSignUp && (
@@ -295,7 +292,6 @@ const Index = () => {
                       <Button 
                         type="submit" 
                         className="w-full h-11 text-base rounded-xl font-medium bg-white hover:bg-gray-100 text-black" 
-<<<<<<< HEAD
                         disabled={loading || !acceptSignInPolicy}
                       >
                         {loading ? 'Please wait...' : 'Sign In'}

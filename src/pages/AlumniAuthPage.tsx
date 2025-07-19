@@ -19,13 +19,10 @@ const AlumniAuthPage = () => {
   const [degree, setDegree] = useState('');
   const [major, setMajor] = useState('');
   const [loading, setLoading] = useState(false);
-<<<<<<< HEAD
   const [acceptSignUpPolicy, setAcceptSignUpPolicy] = useState(false);
   const [acceptSignInPolicy, setAcceptSignInPolicy] = useState(false);
   const [signUpPolicyWarning, setSignUpPolicyWarning] = useState('');
   const [signInPolicyWarning, setSignInPolicyWarning] = useState('');
-=======
->>>>>>> 600fc361db99d0afca5b5e0cecaa6e7bf7e65807
   const { user, signIn, signUp, loading: authLoading, isAdmin } = useAuth();
   const navigate = useNavigate();
 
@@ -74,7 +71,6 @@ const AlumniAuthPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-<<<<<<< HEAD
     setSignUpPolicyWarning('');
     setSignInPolicyWarning('');
 
@@ -88,8 +84,6 @@ const AlumniAuthPage = () => {
       setLoading(false);
       return;
     }
-=======
->>>>>>> 600fc361db99d0afca5b5e0cecaa6e7bf7e65807
 
     try {
       // Check for admin credentials first
@@ -276,7 +270,6 @@ const AlumniAuthPage = () => {
                             placeholder="e.g., Computer Science"
                           />
                         </div>
-<<<<<<< HEAD
                         {/* Impersonation Policy for Sign Up */}
                         <div className="mt-6 text-xs text-gray-600">
                           <div className="flex items-start mb-2">
@@ -356,44 +349,6 @@ const AlumniAuthPage = () => {
                         {loading ? 'Please wait...' : 'Sign In'}
                       </Button>
                     )}
-=======
-                      </>
-                    )}
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="email" className="text-sm font-medium">Email</Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                        className="h-11 rounded-xl"
-                        placeholder="Enter your email"
-                      />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="password" className="text-sm font-medium">Password</Label>
-                      <Input
-                        id="password"
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                        className="h-11 rounded-xl"
-                        placeholder="Enter your password"
-                      />
-                    </div>
-
-                    <Button 
-                      type="submit" 
-                      className="w-full h-11 text-base rounded-xl font-medium bg-white hover:bg-gray-100 text-black" 
-                      disabled={loading}
-                    >
-                      {loading ? 'Please wait...' : isSignUp ? 'Create Alumni Account' : 'Sign In'}
-                    </Button>
->>>>>>> 600fc361db99d0afca5b5e0cecaa6e7bf7e65807
 
                     <div className="text-center space-y-3">
                       <Button

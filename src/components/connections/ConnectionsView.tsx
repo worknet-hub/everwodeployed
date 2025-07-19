@@ -201,7 +201,6 @@ export const ConnectionsView = () => {
     }
   }, [fetchConnections, fetchCurrentUserProfile, user?.id]);
 
-<<<<<<< HEAD
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const focusUser = params.get('focusUser');
@@ -226,8 +225,6 @@ export const ConnectionsView = () => {
     }
   }, [location.search, connections, user?.id]);
 
-=======
->>>>>>> 600fc361db99d0afca5b5e0cecaa6e7bf7e65807
   const acceptedConnections = connections.filter(c => c.status === 'accepted');
   // Fix: pendingSent and pendingReceived should be arrays of Connection, not booleans
   const pendingSentArr = connections.filter(

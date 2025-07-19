@@ -10,10 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { X } from 'lucide-react';
 import { toast } from 'sonner';
 import { useProfileUpdater } from '@/hooks/useProfileUpdater';
-<<<<<<< HEAD
 import { AvatarUpload } from './AvatarUpload';
-=======
->>>>>>> 600fc361db99d0afca5b5e0cecaa6e7bf7e65807
 
 interface Profile {
   id: string;
@@ -121,7 +118,6 @@ export const EditProfileModal = ({ isOpen, onClose, profile, onProfileUpdated }:
           Update your profile information below.
         </DialogDescription>
         <form onSubmit={handleSubmit} className="space-y-6">
-<<<<<<< HEAD
           {/* Avatar Upload */}
           <div className="flex justify-center mb-4">
             <AvatarUpload
@@ -131,8 +127,6 @@ export const EditProfileModal = ({ isOpen, onClose, profile, onProfileUpdated }:
               size="lg"
             />
           </div>
-=======
->>>>>>> 600fc361db99d0afca5b5e0cecaa6e7bf7e65807
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label htmlFor="full_name">Full Name</Label>

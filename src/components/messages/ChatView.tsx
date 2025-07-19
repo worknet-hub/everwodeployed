@@ -98,10 +98,6 @@ export const ChatView = () => {
     }
   };
 
-<<<<<<< HEAD
-  const partnerName = location.state?.partnerName;
-=======
->>>>>>> 600fc361db99d0afca5b5e0cecaa6e7bf7e65807
   const selectedUser = conversations.find(c => c.partner_id === selectedConversation);
 
   // Mobile layout
@@ -119,20 +115,12 @@ export const ChatView = () => {
                 <ArrowLeft className="w-6 h-6 text-white" />
               </button>
               {/* Recipient info */}
-<<<<<<< HEAD
-              {(selectedUser || partnerName) && (
-=======
               {selectedUser && (
->>>>>>> 600fc361db99d0afca5b5e0cecaa6e7bf7e65807
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <div className="flex items-center space-x-3 cursor-pointer">
                       <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-800 flex items-center justify-center">
-<<<<<<< HEAD
-                        {selectedUser?.avatar_url ? (
-=======
                         {selectedUser.avatar_url ? (
->>>>>>> 600fc361db99d0afca5b5e0cecaa6e7bf7e65807
                           <img src={selectedUser.avatar_url} alt={selectedUser.full_name} className="w-full h-full object-cover" loading="lazy" />
                         ) : (
                           <User className="w-6 h-6 text-gray-300" />
@@ -140,40 +128,24 @@ export const ChatView = () => {
                       </div>
                       <div>
                         <div className="font-semibold text-white text-base truncate max-w-[120px]">
-<<<<<<< HEAD
-                          {partnerName || selectedUser?.username || selectedUser?.full_name || 'unknown-user'}
-=======
                           {selectedUser.username || selectedUser.full_name || 'unknown-user'}
->>>>>>> 600fc361db99d0afca5b5e0cecaa6e7bf7e65807
                         </div>
                         <div className="text-xs text-gray-400">{isConnected ? 'Connected' : 'Not connected'}</div>
                       </div>
                     </div>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="start">
-<<<<<<< HEAD
-                    <DropdownMenuItem onClick={() => navigate(`/profile/${selectedUser?.partner_id}`)}>
-                      View Profile
-                    </DropdownMenuItem>
-                    <DropdownMenuCheckboxItem
-                      checked={selectedUser?.isMuted}
-=======
                     <DropdownMenuItem onClick={() => navigate(`/profile/${selectedUser.partner_id}`)}>
                       View Profile
                     </DropdownMenuItem>
                     <DropdownMenuCheckboxItem
                       checked={selectedUser.isMuted}
->>>>>>> 600fc361db99d0afca5b5e0cecaa6e7bf7e65807
                       onCheckedChange={() => {}} // TODO: wire up real mute logic
                     >
                       Mute
                     </DropdownMenuCheckboxItem>
                     <DropdownMenuCheckboxItem
-<<<<<<< HEAD
-                      checked={selectedUser?.readReceipt === false}
-=======
                       checked={selectedUser.readReceipt === false}
->>>>>>> 600fc361db99d0afca5b5e0cecaa6e7bf7e65807
                       onCheckedChange={() => {}} // TODO: wire up real read receipt logic
                     >
                       Turn off read receipt
@@ -190,10 +162,7 @@ export const ChatView = () => {
               <ChatArea
                 selectedConversation={selectedConversation}
                 selectedUser={selectedUser}
-<<<<<<< HEAD
-                userName={partnerName || selectedUser?.username || selectedUser?.full_name || 'unknown-user'}
-=======
->>>>>>> 600fc361db99d0afca5b5e0cecaa6e7bf7e65807
+                userName={selectedUser?.username || selectedUser?.full_name || 'unknown-user'}
                 messages={messages}
                 setMessages={setMessages}
                 newMessage={newMessage}
@@ -241,10 +210,7 @@ export const ChatView = () => {
         <ChatArea
           selectedConversation={selectedConversation}
           selectedUser={selectedUser}
-<<<<<<< HEAD
-          userName={partnerName || selectedUser?.username || selectedUser?.full_name || 'unknown-user'}
-=======
->>>>>>> 600fc361db99d0afca5b5e0cecaa6e7bf7e65807
+          userName={selectedUser?.username || selectedUser?.full_name || 'unknown-user'}
           messages={messages}
           setMessages={setMessages}
           newMessage={newMessage}

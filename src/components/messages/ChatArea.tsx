@@ -31,10 +31,7 @@ interface ChatAreaProps {
   onLoadOlderMessages?: () => void;
   hasMoreMessages?: boolean;
   isLoadingOlder?: boolean;
-<<<<<<< HEAD
   userName?: string;
-=======
->>>>>>> 600fc361db99d0afca5b5e0cecaa6e7bf7e65807
 }
 
 export const ChatArea = ({
@@ -53,12 +50,8 @@ export const ChatArea = ({
   onCancelReply,
   onLoadOlderMessages,
   hasMoreMessages = false,
-<<<<<<< HEAD
   isLoadingOlder = false,
   userName,
-=======
-  isLoadingOlder = false
->>>>>>> 600fc361db99d0afca5b5e0cecaa6e7bf7e65807
 }: ChatAreaProps) => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
@@ -142,11 +135,7 @@ export const ChatArea = ({
       {!isMobile && (
         <div className="relative z-30">
           <ChatHeader
-<<<<<<< HEAD
             userName={userName || selectedUser?.full_name || 'Unknown User'}
-=======
-            userName={selectedUser?.full_name || 'Unknown User'}
->>>>>>> 600fc361db99d0afca5b5e0cecaa6e7bf7e65807
             userAvatar={selectedUser?.avatar_url || ''}
             isConnected={isConnected}
             userId={selectedUser?.partner_id || ''}

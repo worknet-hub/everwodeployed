@@ -10,11 +10,7 @@ import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-<<<<<<< HEAD
-import { Globe, Users, GraduationCap } from 'lucide-react';
-=======
 import { Globe, Users } from 'lucide-react';
->>>>>>> 600fc361db99d0afca5b5e0cecaa6e7bf7e65807
 
 interface CommunityThoughtComposerProps {
   userInterests: string[];
@@ -25,11 +21,7 @@ interface CommunityThoughtComposerProps {
 export const CommunityThoughtComposer = ({ userInterests, onThoughtPosted, fixedCommunity }: CommunityThoughtComposerProps) => {
   const { user } = useAuth();
   const [content, setContent] = useState('');
-<<<<<<< HEAD
-  const [visibility, setVisibility] = useState<'public' | 'connections' | 'uni'>('public');
-=======
   const [visibility, setVisibility] = useState<'public' | 'connections'>('public');
->>>>>>> 600fc361db99d0afca5b5e0cecaa6e7bf7e65807
   const [selectedCommunity, setSelectedCommunity] = useState<string>('');
   const [isPosting, setIsPosting] = useState(false);
 
@@ -96,17 +88,10 @@ export const CommunityThoughtComposer = ({ userInterests, onThoughtPosted, fixed
           <Label className="text-sm font-medium">Visibility</Label>
           <RadioGroup
             value={visibility}
-<<<<<<< HEAD
-            onValueChange={(value: 'public' | 'connections' | 'uni') => {
-              setVisibility(value);
-              if ((value === 'connections' || value === 'uni') && !fixedCommunity) {
-                setSelectedCommunity(''); // Clear community tag for connections-only or uni-only posts
-=======
             onValueChange={(value: 'public' | 'connections') => {
               setVisibility(value);
               if (value === 'connections' && !fixedCommunity) {
                 setSelectedCommunity(''); // Clear community tag for connections-only posts
->>>>>>> 600fc361db99d0afca5b5e0cecaa6e7bf7e65807
               }
             }}
             className="flex space-x-6"
@@ -125,16 +110,6 @@ export const CommunityThoughtComposer = ({ userInterests, onThoughtPosted, fixed
                 <span>Connections Only</span>
               </Label>
             </div>
-<<<<<<< HEAD
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="uni" id="uni" />
-              <Label htmlFor="uni" className="flex items-center space-x-2 cursor-pointer">
-                <GraduationCap className="w-4 h-4" />
-                <span>Uni-only</span>
-              </Label>
-            </div>
-=======
->>>>>>> 600fc361db99d0afca5b5e0cecaa6e7bf7e65807
           </RadioGroup>
         </div>
         {/* Community Tag Selection - Only for public posts and if not fixed */}
@@ -175,14 +150,6 @@ export const CommunityThoughtComposer = ({ userInterests, onThoughtPosted, fixed
             This thought will only be visible to your connections. Community tagging is not available for connection-only posts.
           </p>
         )}
-<<<<<<< HEAD
-        {visibility === 'uni' && (
-          <p className="text-xs text-blue-400">
-            This thought will only be visible to users from your university.
-          </p>
-        )}
-=======
->>>>>>> 600fc361db99d0afca5b5e0cecaa6e7bf7e65807
         <div className="flex justify-between items-center">
           <span className="text-sm text-muted-foreground">
             {content.length}/500 characters

@@ -23,11 +23,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useRealtime } from '@/hooks/useRealtime';
 import { toast } from 'sonner';
 import { useRealtimeProfile } from '@/contexts/RealtimeProfileContext';
-<<<<<<< HEAD
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { useNavigate } from 'react-router-dom';
-=======
->>>>>>> 600fc361db99d0afca5b5e0cecaa6e7bf7e65807
 
 interface Profile {
   id: string;
@@ -67,7 +64,6 @@ export const ProfileHeader = ({ profile, isOwnProfile, onEditClick, onAvatarChan
   const [showReasonBox, setShowReasonBox] = useState(false);
   const [reportReason, setReportReason] = useState('');
   const dropdownRef = useRef<HTMLDivElement>(null);
-<<<<<<< HEAD
   const [showRemoveDialog, setShowRemoveDialog] = useState(false);
   const navigate = useNavigate();
 
@@ -77,10 +73,6 @@ export const ProfileHeader = ({ profile, isOwnProfile, onEditClick, onAvatarChan
   const isRequested = !!(user?.id && profile?.id && connections.some(c => c.requester_id === user.id && c.addressee_id === profile.id && c.status === 'pending'));
   // Determine if this is a pending received request
   const isPendingReceived = !!(user?.id && profile?.id && connections.some(c => c.addressee_id === user.id && c.requester_id === profile.id && c.status === 'pending'));
-=======
-
-  const isRequested = !!(user?.id && profile?.id && connections.some(c => c.requester_id === user.id && c.addressee_id === profile.id && c.status === 'pending'));
->>>>>>> 600fc361db99d0afca5b5e0cecaa6e7bf7e65807
 
   // Fetch and subscribe to total likes
   useEffect(() => {
@@ -222,7 +214,6 @@ export const ProfileHeader = ({ profile, isOwnProfile, onEditClick, onAvatarChan
     setReportReason('');
   };
 
-<<<<<<< HEAD
   // Remove connection handler
   const handleRemoveConnection = async () => {
     if (!user?.id || !profile?.id) return;
@@ -248,8 +239,6 @@ export const ProfileHeader = ({ profile, isOwnProfile, onEditClick, onAvatarChan
     }
   };
 
-=======
->>>>>>> 600fc361db99d0afca5b5e0cecaa6e7bf7e65807
   // Determine if users are connected (real-time)
   const isConnected = connections.some(
     c =>
@@ -305,17 +294,6 @@ export const ProfileHeader = ({ profile, isOwnProfile, onEditClick, onAvatarChan
     <div className="flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0 md:space-x-6 relative">
       {/* Left: Avatar and Stats */}
       <div className="flex flex-row md:flex-col items-center w-full md:w-auto justify-center md:justify-start">
-<<<<<<< HEAD
-        {/* Only show static avatar, no upload for own profile */}
-        <Avatar className="w-32 h-32">
-          {profile.avatar_url ? (
-            <AvatarImage src={profile.avatar_url} loading="lazy" />
-          ) : null}
-          <AvatarFallback className="text-2xl">
-            <User className="w-12 h-12 text-gray-300" />
-          </AvatarFallback>
-        </Avatar>
-=======
         {isOwnProfile && onAvatarChange ? (
           <AvatarUpload
             currentAvatar={profile.avatar_url}
@@ -331,7 +309,6 @@ export const ProfileHeader = ({ profile, isOwnProfile, onEditClick, onAvatarChan
             </AvatarFallback>
           </Avatar>
         )}
->>>>>>> 600fc361db99d0afca5b5e0cecaa6e7bf7e65807
         <div className="flex flex-row items-center space-x-4 ml-4 md:ml-0 md:mt-6">
           <div className="flex flex-col items-center min-w-[36px]">
             <span className="text-lg font-bold text-white">{totalLikes}</span>
@@ -356,7 +333,6 @@ export const ProfileHeader = ({ profile, isOwnProfile, onEditClick, onAvatarChan
               </div>
             )}
             {isOwnProfile && (
-<<<<<<< HEAD
               <div className="flex items-center space-x-1 ml-2">
                 <button
                   onClick={onEditClick}
@@ -367,15 +343,6 @@ export const ProfileHeader = ({ profile, isOwnProfile, onEditClick, onAvatarChan
                 </button>
                 <span className="text-xs text-gray-400">edit profile</span>
               </div>
-=======
-              <button
-                onClick={onEditClick}
-                className="ml-2 p-1 rounded-full hover:bg-white/10 transition-colors"
-                title="Edit username"
-              >
-                <Edit className="w-5 h-5 text-white" />
-              </button>
->>>>>>> 600fc361db99d0afca5b5e0cecaa6e7bf7e65807
             )}
             {profile.college_verified && (
               <Verified className="w-4 h-4 md:w-6 md:h-6 text-white" />
@@ -419,7 +386,6 @@ export const ProfileHeader = ({ profile, isOwnProfile, onEditClick, onAvatarChan
           null
         ) : (
           <>
-<<<<<<< HEAD
             {/* Respond button for pending received requests */}
             {isPendingReceived && !isConnected ? (
               <Button
@@ -504,29 +470,9 @@ export const ProfileHeader = ({ profile, isOwnProfile, onEditClick, onAvatarChan
                 </Dialog>
               </>
             )}
-=======
-            <Button 
-              onClick={handleConnectionRequest}
-              className={`flex items-center gap-2 ${isRequested ? '' : 'bg-white border border-white text-black hover:bg-gray-100 hover:border-gray-200'}`}
-              style={isRequested ? { backgroundColor: '#36454F', color: 'white', border: 'none' } : {}}
-            >
-              {isRequested ? <UserCheck className="w-4 h-4 text-white" /> : <Users className="w-4 h-4 text-black" />}
-              {isRequested ? 'Requested' : 'Request'}
-            </Button>
-            <Button variant="outline" disabled={!isConnected} title={!isConnected ? 'You must be connected to message' : undefined}>
-              <MessageCircle className="w-4 h-4 mr-2" />
-              Message
-            </Button>
-            {/* Three-dot menu for reporting (mobile only) is now handled by showMenuOnly at the top left */}
->>>>>>> 600fc361db99d0afca5b5e0cecaa6e7bf7e65807
           </>
         )}
       </div>
     </div>
-<<<<<<< HEAD
-  );
-};
-=======
   )
 }
->>>>>>> 600fc361db99d0afca5b5e0cecaa6e7bf7e65807
