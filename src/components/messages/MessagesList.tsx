@@ -5,7 +5,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { Message } from '@/types/messages';
 import { MessageMenu } from './MessageMenu';
 import { MessageReactionsList } from './MessageReactionsList';
+<<<<<<< HEAD
 import React from 'react';
+=======
+>>>>>>> 600fc361db99d0afca5b5e0cecaa6e7bf7e65807
 
 interface MessagesListProps {
   messages: Message[];
@@ -20,6 +23,7 @@ interface MessagesListProps {
   onEdit?: (message: Message) => void;
 }
 
+<<<<<<< HEAD
 function getImagePreviewUrl(url: string): string | null {
   // Imgur: https://imgur.com/xxxx or https://imgur.com/a/xxxx
   const imgurMatch = url.match(/^https?:\/\/(?:i\.)?imgur\.com\/(?:gallery\/|a\/)?([\w\d]+)(?:\.[a-zA-Z]+)?$/);
@@ -63,6 +67,8 @@ function renderMessageContent(content: string) {
   });
 }
 
+=======
+>>>>>>> 600fc361db99d0afca5b5e0cecaa6e7bf7e65807
 export const MessagesList = ({ 
   messages, 
   currentUserId, 
@@ -124,7 +130,11 @@ export const MessagesList = ({
   }, [onLoadOlderMessages, hasMoreMessages, isLoadingOlder]);
 
   return (
+<<<<<<< HEAD
     <div ref={containerRef} className="space-y-4 mt-6 overflow-x-hidden">
+=======
+    <div ref={containerRef} className="space-y-4 mt-6">
+>>>>>>> 600fc361db99d0afca5b5e0cecaa6e7bf7e65807
       {/* Loading indicator for older messages */}
       {isLoadingOlder && (
         <div className="flex justify-center py-4">
@@ -160,6 +170,7 @@ export const MessagesList = ({
 
               {/* Message bubble */}
               <div className="relative">
+<<<<<<< HEAD
                 {/* Check if the message is an image (single image, no extra text) */}
                 {(() => {
                   const urlRegex = /(https?:\/\/[\w\-._~:/?#[\]@!$&'()*+,;=%]+)(?=\s|$)/g;
@@ -216,6 +227,29 @@ export const MessagesList = ({
                     );
                   }
                 })()}
+=======
+                <div
+                  className={`px-4 py-2 rounded-full ${
+                    message.sender_id === currentUserId
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-muted'
+                  } flex items-center justify-center text-center`}
+                >
+                  <p className="w-full">{message.content}</p>
+                  <div className="flex items-center justify-end mt-1">
+                    <div className="flex items-center gap-1">
+                      <MessageMenu
+                        message={message}
+                        isOwnMessage={message.sender_id === currentUserId}
+                        onReply={onReply}
+                        onReact={(emoji) => onReact(message.id, emoji)}
+                        onDelete={onDelete}
+                        onEdit={onEdit}
+                      />
+                    </div>
+                  </div>
+                </div>
+>>>>>>> 600fc361db99d0afca5b5e0cecaa6e7bf7e65807
                 {/* Tick and time below bubble for own messages */}
                 {message.sender_id === currentUserId && (
                   <div className="flex items-center justify-between mt-1 px-2">

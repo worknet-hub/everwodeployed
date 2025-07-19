@@ -40,8 +40,11 @@ const Index = () => {
   // Moved up: thoughtsFilter and dropdownOpen
   const [thoughtsFilter, setThoughtsFilter] = useState<'public' | 'friends'>('public');
   const [dropdownOpen, setDropdownOpen] = useState(false);
+<<<<<<< HEAD
   const [acceptSignInPolicy, setAcceptSignInPolicy] = useState(false);
   const [signInPolicyWarning, setSignInPolicyWarning] = useState('');
+=======
+>>>>>>> 600fc361db99d0afca5b5e0cecaa6e7bf7e65807
 
   // Handle community filtering from URL params
   useEffect(() => {
@@ -70,6 +73,7 @@ const Index = () => {
     setLoading(true);
     setUsernameWarning('');
     setPolicyWarning('');
+<<<<<<< HEAD
     setSignInPolicyWarning('');
 
     if (isSignUp && !acceptPolicy) {
@@ -82,6 +86,14 @@ const Index = () => {
       setLoading(false);
       return;
     }
+=======
+
+    // if (!acceptPolicy) {
+    //   setPolicyWarning('You must accept the Impersonation Policy to sign up.');
+    //   setLoading(false);
+    //   return;
+    // }
+>>>>>>> 600fc361db99d0afca5b5e0cecaa6e7bf7e65807
 
     try {
       if (isSignUp) {
@@ -223,12 +235,20 @@ const Index = () => {
                         <div className="flex items-start mb-2">
                           <input
                             type="checkbox"
+<<<<<<< HEAD
                             id="impersonation-policy-signup"
+=======
+                            id="impersonation-policy"
+>>>>>>> 600fc361db99d0afca5b5e0cecaa6e7bf7e65807
                             checked={acceptPolicy}
                             onChange={e => setAcceptPolicy(e.target.checked)}
                             className="mr-2 mt-1"
                           />
+<<<<<<< HEAD
                           <label htmlFor="impersonation-policy-signup" className="select-none">
+=======
+                          <label htmlFor="impersonation-policy" className="select-none">
+>>>>>>> 600fc361db99d0afca5b5e0cecaa6e7bf7e65807
                             I have read and accept the <span className="font-semibold text-white">Impersonation Policy</span> below.
                           </label>
                         </div>
@@ -247,6 +267,7 @@ const Index = () => {
                         </div>
                       </div>
                     )}
+<<<<<<< HEAD
                     {/* Impersonation Policy for Sign In */}
                     {!isSignUp && (
                       <div className="mt-6 text-xs text-gray-400">
@@ -277,6 +298,8 @@ const Index = () => {
                         </div>
                       </div>
                     )}
+=======
+>>>>>>> 600fc361db99d0afca5b5e0cecaa6e7bf7e65807
 
                     {/* Move Create Account button below policy */}
                     {isSignUp && (
@@ -292,7 +315,11 @@ const Index = () => {
                       <Button 
                         type="submit" 
                         className="w-full h-11 text-base rounded-xl font-medium bg-white hover:bg-gray-100 text-black" 
+<<<<<<< HEAD
                         disabled={loading || !acceptSignInPolicy}
+=======
+                        disabled={loading}
+>>>>>>> 600fc361db99d0afca5b5e0cecaa6e7bf7e65807
                       >
                         {loading ? 'Please wait...' : 'Sign In'}
                       </Button>

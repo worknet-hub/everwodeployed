@@ -1,4 +1,5 @@
 
+<<<<<<< HEAD
 import { useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
@@ -18,6 +19,11 @@ const OnboardingPage = () => {
     return null;
   }
 
+=======
+import { OnboardingContainer } from '@/components/onboarding/OnboardingContainer';
+
+const OnboardingPage = () => {
+>>>>>>> 600fc361db99d0afca5b5e0cecaa6e7bf7e65807
   return <OnboardingContainer />;
 };
 

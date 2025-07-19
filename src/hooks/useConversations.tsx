@@ -22,9 +22,12 @@ export const useConversations = (userId?: string) => {
         avatar_url: c.avatar_url || '',
         last_message_content: c.last_message_content || '',
         last_message_created_at: c.last_message_created_at || new Date().toISOString(),
+<<<<<<< HEAD
         last_message_sender_id: c.last_message_sender_id,
         last_message_read: c.last_message_read,
         current_user_id: userId,
+=======
+>>>>>>> 600fc361db99d0afca5b5e0cecaa6e7bf7e65807
       }));
       setConversations(formattedData);
     }

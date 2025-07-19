@@ -163,9 +163,23 @@ export const ProfileOverviewTab = ({ profile, isOwnProfile }: ProfileOverviewTab
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+<<<<<<< HEAD
           {/* Always show bio as plain text, even for own profile */}
           {profile?.bio && <p className="text-muted-foreground whitespace-pre-line">{profile.bio}</p>}
           {/* Remove textarea and editing logic for bio here */}
+=======
+          {isOwnProfile ? (
+            <Textarea
+              value={editableFields.bio}
+              onChange={(e) => handleFieldChange('bio', e.target.value)}
+              placeholder="Tell us about yourself..."
+              className="min-h-[80px] resize-none profile-input"
+            />
+          ) : (
+            profile?.bio && <p className="text-muted-foreground">{profile.bio}</p>
+          )}
+          
+>>>>>>> 600fc361db99d0afca5b5e0cecaa6e7bf7e65807
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {isOwnProfile ? (
               <>
