@@ -47,7 +47,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
     initializeAuth();
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-<<<<<<< HEAD
       console.log('[Supabase Auth] State change event:', event);
       if (session) {
         console.log('[Supabase Auth] Session user:', session.user);
@@ -55,9 +54,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       } else {
         console.log('[Supabase Auth] No session (user likely signed out or session expired)');
       }
-=======
-      console.log('Auth state change:', event, !!session?.user);
->>>>>>> 600fc361db99d0afca5b5e0cecaa6e7bf7e65807
       if (mounted) {
         const currentUser = session?.user ?? null;
         const adminStatus = currentUser ? isAdminUser(currentUser.email || '') : false;
